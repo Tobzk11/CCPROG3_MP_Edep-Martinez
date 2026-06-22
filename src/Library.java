@@ -150,7 +150,101 @@ public class Library {
   }
   return false;
  }
+ /**
+  * Prints the details of every entry in the library to the console,
+  * grouped by media type (Movies, then TV Series, then Video Games).
+  *
+  * @pre  none
+  * @post all entries are printed to standard output; no data is
+  *       modified
+  */
+ public void displayAllEntries() {
+  System.out.println("=== Movies ===");
+  for (Movie m : movies) {
+   System.out.println(m.getMovieDetails());
+  }
+  System.out.println("=== TV Series ===");
+  for (TVSeries t : tvSeriesList) {
+   System.out.println(t.getSeriesDetails());
+  }
+  System.out.println("=== Video Games ===");
+  for (VideoGame v : videoGames) {
+   System.out.println(v.getGameDetails());
+  }
+ }
 
+ /**
+  * Prints the details of every entry across all three media types
+  * whose status matches the given MediaStatus.
+  *
+  * @param status the MediaStatus to filter by (PLANNED, IN_PROGRESS,
+  *               or COMPLETED)
+  * @pre  status is not null
+  * @post matching entries are printed to standard output; no data
+  *       is modified
+  */
+ public void filterByStatus(MediaStatus status) {
+  for (Movie m : movies) {
+   if (m.getEntry().getStatus() == status) {
+    System.out.println(m.getMovieDetails());
+   }
+  }
+  for (TVSeries t : tvSeriesList) {
+   if (t.getEntry().getStatus() == status) {
+    System.out.println(t.getSeriesDetails());
+   }
+  }
+  for (VideoGame v : videoGames) {
+   if (v.getEntry().getStatus() == status) {
+    System.out.println(v.getGameDetails());
+   }
+  }
+ }
+
+ /**
+  * Prints the details of every entry belonging to the given media
+  * type. The media type is matched case-insensitively against
+  * "Movie", "TVSeries", or "VideoGame".
+  *
+  * @param mediaType the type of media to filter by ("Movie",
+  *                  "TVSeries", or "VideoGame")
+  * @pre  mediaType is not null
+  * @post matching entries are printed to standard output; no data
+  *       is modified. If mediaType is not recognized, nothing is
+  *       printed.
+  */
+ public void filterByType(String mediaType) {
+  if (mediaType.equalsIgnoreCase("Movie")) {
+   for (Movie m : movies) {
+    System.out.println(m.getMovieDetails());
+   }
+  } else if (mediaType.equalsIgnoreCase("TVSeries")) {
+   for (TVSeries t : tvSeriesList) {
+    System.out.println(t.getSeriesDetails());
+   }
+  } else if (mediaType.equalsIgnoreCase("VideoGame")) {
+   for (VideoGame g : videoGames) {
+    System.out.println(g.getGameDetails());
+   }
+  }
+ }
+
+ /**
+  * Builds a summary string reporting the total number of entries
+  * in the library and the count of each media type.
+  *
+  * @return a String summarizing total entries, movie count, TV
+  *         series count, and video game count
+  * @pre  none
+  * @post no data is modified
+  */
+ public String getSummary() {
+  int total = movies.size() + tvSeriesList.size() + videoGames.size();
+  return "Total entries: " + total
+          + " | Movies: " + movies.size()
+          + " | TV Series: " + tvSeriesList.size()
+          + " | Video Games: " + videoGames.size();
+ }
 
 }
 
