@@ -10,7 +10,7 @@ public class MediaEntry {
     private String title;
     private String genre;
     private MediaStatus status;
-    private int rating;
+    private Integer rating;
     private String review;
 
     /**
