@@ -231,21 +231,56 @@ public class Library {
 
  /**
   * Builds a summary string reporting the total number of entries
-  * in the library and the count of each media type.
+  * in the library, the count of each media type, and the average
+  * rating across all Completed entries that have been rated.
   *
-  * @return a String summarizing total entries, movie count, TV
-  *         series count, and video game count
+  * @return a String summarizing total entries, movie/TV/game counts,
+  *         and the average rating of completed entries
   * @pre  none
   * @post no data is modified
   */
  public String getSummary() {
   int total = movies.size() + tvSeriesList.size() + videoGames.size();
+
+  int ratingSum = 0;
+  int ratedCount = 0;
+
+  for (Movie m : movies) {
+   Integer r = m.getEntry().getRating();
+   if (r != null) {
+    ratingSum += r;
+    ratedCount++;
+   }
+  }
+  for (TVSeries t : tvSeriesList) {
+   Integer r = t.getEntry().getRating();
+   if (r != null) {
+    ratingSum += r;
+    ratedCount++;
+   }
+  }
+  for (VideoGame v : videoGames) {
+   Integer r = v.getEntry().getRating();
+   if (r != null) {
+    ratingSum += r;
+    ratedCount++;
+   }
+  }
+
+  String avgRatingText;
+  if (ratedCount == 0) {
+   avgRatingText = "No completed entries rated yet";
+  } else {
+   double average = (double) ratingSum / ratedCount;
+   avgRatingText = String.format("%.2f", average);
+  }
+
   return "Total entries: " + total
           + " | Movies: " + movies.size()
           + " | TV Series: " + tvSeriesList.size()
-          + " | Video Games: " + videoGames.size();
+          + " | Video Games: " + videoGames.size()
+          + " | Average rating (completed): " + avgRatingText;
  }
-
 }
 
 
