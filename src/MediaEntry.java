@@ -95,4 +95,16 @@ public class MediaEntry {
     public MediaStatus getStatus() {
         return this.status;
     }
+    
+    /**
+     * Returns the rating of this entry, or null if it has not been
+     * rated yet.
+     *
+     * @return the rating as an Integer, or null if unrated
+     * @pre  none
+     * @post no data is modified
+     */
+    public Integer getRating() {
+        return this.rating;
+    }
 }
