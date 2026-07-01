@@ -12,7 +12,14 @@ public class TVSeries {
     }
 
     public boolean updateWatchedEpisodes(int episodes) {
-        return true; // change later!
+        boolean status = true;
+        if (episodes > 0 && episodes <= totalEpisodes)
+            watchedEpisodes = episodes;
+        else {
+            System.out.println("Invalid episodes. ");
+            status = false;
+        }
+        return status;
     }
 
     public MediaEntry getEntry() {
@@ -20,6 +27,12 @@ public class TVSeries {
     }
 
     public String getSeriesDetails() {
-        return "hi"; // change later!
+        StringBuilder word = new StringBuilder();
+        word.append("Media: TV Series").append("\n");
+        word.append("Total Episodes: ").append(this.totalEpisodes).append("\n");
+        word.append("Watched Episodes: ").append(this.watchedEpisodes).append("\n");
+        word.append("Seasons: ").append(this.seasonCount).append("\n");
+
+        return word.toString();
     }
 }

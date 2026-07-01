@@ -12,6 +12,7 @@ public class UserProfile {
     }
 
     public void viewSummary() {
-        
+        System.out.printf("Hello, %s!\n", this.username);
+        this.library.getSummary();
     }
 }

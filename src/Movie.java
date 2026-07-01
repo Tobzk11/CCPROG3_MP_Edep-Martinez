@@ -16,6 +16,11 @@ public class Movie {
     }
 
     public String getMovieDetails() {
-        return this.director; // change later!
+        StringBuilder word = new StringBuilder();
+        word.append("Media: Movie").append("\n");
+        word.append("Director: ").append(this.director).append("\n");
+        word.append("Duration: ").append(this.durationMinutes).append("\n");
+
+        return word.toString();
     }
 }

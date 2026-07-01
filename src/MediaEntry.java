@@ -58,13 +58,13 @@ public class MediaEntry {
      *       and true is returned; otherwise neither field changes
      *       and false is returned
      */
-    public boolean setRatingAndReview(int rating, String review){
-        if (!isCompleted()){
-            return false;
+    public void setRatingAndReview(int rating, String review) {
+        if (isCompleted()) 
+            System.out.println("Entry has not been completed.");
+        else {
+            this.rating = rating;
+            this.review = review;
         }
-        this.rating = rating;
-        this.review = review;
-        return true;
     }
 
     /**
@@ -75,7 +75,7 @@ public class MediaEntry {
      * @post no data is modified
      */
     public boolean isCompleted(){
-        return this.status==MediaStatus.COMPLETED;
+        return this.status == MediaStatus.COMPLETED;
     }
 
     /**
