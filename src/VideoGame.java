@@ -14,12 +14,12 @@ public class VideoGame {
     }
 
     public boolean updateHoursPlayed(double hours) {
-        boolean status = true;
-        if (hours > 0)
-            this.hoursPlayed += hours;
-        else
+        if (hours <= 0) {
             System.out.println("Invalid hours played.");
-        return status;
+            return false;
+        }
+        this.hoursPlayed = hours;
+        return true;
     }
 
     public MediaEntry getEntry() {
@@ -29,11 +29,15 @@ public class VideoGame {
     public String getGameDetails() {
         StringBuilder word = new StringBuilder();
         word.append("Media: Video Game").append("\n");
-        word.append("Available On: ").append(this.platform).append("\n");
+        word.append("Title: ").append(entry.getTitle()).append("\n");
+        word.append("Genre: ").append(entry.getGenre()).append("\n");
+        word.append("Platform: ").append(this.platform).append("\n");
         word.append("Required Specs: ").append(this.requiredSpecs).append("\n");
         word.append("Developer: ").append(this.developer).append("\n");
         word.append("Hours Played: ").append(this.hoursPlayed).append("\n");
-
+        word.append("Status: ").append(entry.getStatus()).append("\n");
+        if (entry.getRating() != null)
+            word.append("Rating: ").append(entry.getRating()).append("/10\n");
         return word.toString();
     }
 }

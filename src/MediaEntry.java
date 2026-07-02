@@ -58,13 +58,14 @@ public class MediaEntry {
      *       and true is returned; otherwise neither field changes
      *       and false is returned
      */
-    public void setRatingAndReview(int rating, String review) {
-        if (isCompleted()) 
-            System.out.println("Entry has not been completed.");
-        else {
-            this.rating = rating;
-            this.review = review;
+    public boolean setRatingAndReview(int rating, String review) {
+        if (!isCompleted()) {
+            System.out.println("Cannot rate: entry is not completed.");
+            return false;
         }
+        this.rating = rating;
+        this.review = review;
+        return true;
     }
 
     /**
@@ -106,5 +107,14 @@ public class MediaEntry {
      */
     public Integer getRating() {
         return this.rating;
+    }
+
+    /**
+     * Returns the genre of this entry.
+     *
+     * @return the genre
+     */
+    public String getGenre() {
+        return this.genre;
     }
 }
