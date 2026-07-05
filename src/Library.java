@@ -36,7 +36,7 @@ public class Library {
   * @post movie is appended to the end of the movies list
   */
  public void addMovie(Movie movie) {
-  this.movies.add(movie);
+    this.movies.add(movie);
  }
 
  /**
@@ -47,7 +47,7 @@ public class Library {
   * @post series is appended to the end of the tvSeriesList
   */
  public void addTVSeries(TVSeries series) {
-  this.tvSeriesList.add(series);
+    this.tvSeriesList.add(series);
  }
 
  /**
@@ -71,11 +71,11 @@ public class Library {
   * @post the movies list is unchanged
   */
  public Movie findMovie(String title) {
-  for (Movie m : movies) {
-   if (m.getEntry().getTitle().equalsIgnoreCase(title))
-    return m;
-  }
-  return null;
+  Movie foundMovie = null;
+  for (Movie m : movies)
+    if (m.getEntry().getTitle().equalsIgnoreCase(title))
+      foundMovie = m;
+  return foundMovie;
  }
 
  /**
@@ -89,11 +89,11 @@ public class Library {
   * @post the tvSeriesList is unchanged
   */
  public TVSeries findTVSeries(String title) {
-  for (TVSeries t : tvSeriesList) {
+  TVSeries foundTVSeries = null;
+  for (TVSeries t : tvSeriesList) 
    if (t.getEntry().getTitle().equalsIgnoreCase(title))
-    return t;
-  }
-  return null;
+    foundTVSeries = t;
+  return foundTVSeries;
  }
 
  /**
@@ -107,11 +107,11 @@ public class Library {
   * @post the videoGames list is unchanged
   */
  public VideoGame findVideoGame(String title) {
-  for (VideoGame v : videoGames) {
+  VideoGame foundVideoGame = null;
+  for (VideoGame v : videoGames)
    if (v.getEntry().getTitle().equalsIgnoreCase(title))
-    return v;
-  }
-  return null;
+    foundVideoGame = v;
+  return foundVideoGame;
  }
 
  /**
@@ -129,26 +129,27 @@ public class Library {
   *       list; otherwise no list is modified
   */
  public boolean removeEntry(String title, String mediaType) {
+  boolean removed = false;
   if (mediaType.equalsIgnoreCase("Movie")) {
    Movie m = findMovie(title);
    if (m != null) {
     movies.remove(m);
-    return true;
+    removed = true;
    }
   } else if (mediaType.equalsIgnoreCase("TVSeries")) {
    TVSeries t = findTVSeries(title);
    if (t != null) {
     tvSeriesList.remove(t);
-    return true;
+    removed = true;
    }
   } else if (mediaType.equalsIgnoreCase("VideoGame")) {
    VideoGame g = findVideoGame(title);
    if (g != null) {
     videoGames.remove(g);
-    return true;
+    removed = true;
    }
   }
-  return false;
+  return removed;
  }
  /**
   * Prints the details of every entry in the library to the console,

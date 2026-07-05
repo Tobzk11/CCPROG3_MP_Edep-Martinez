@@ -59,13 +59,15 @@ public class MediaEntry {
      *       and false is returned
      */
     public boolean setRatingAndReview(int rating, String review) {
-        if (!isCompleted()) {
+        boolean ratingSet = false;
+        if (!isCompleted())
             System.out.println("Cannot rate: entry is not completed.");
-            return false;
+        else {
+            this.rating = rating;
+            this.review = review;
+            ratingSet = true;
         }
-        this.rating = rating;
-        this.review = review;
-        return true;
+        return ratingSet;   
     }
 
     /**
