@@ -1,3 +1,12 @@
+/**
+ * Serves as the object class for video games. Contains attributes such as the media type, 
+ * the platforms playable on, the required specs to run the game, the developer, and the number
+ * of hours played. The class also contains methods that updates the number of hours played, 
+ * returns the media type, as well as a summary of the video games which contains all aforementioned 
+ * attributes. 
+ * 
+ * @author Simon Jaxith T. Martinez
+ */
 public class VideoGame {
     private MediaEntry entry;
     private String platform;
@@ -5,6 +14,18 @@ public class VideoGame {
     private String developer;
     private double hoursPlayed;
 
+    /**
+     * Constructs a VideoGame with entry, platform, requiredSpecs, developer and hoursPlayed 
+     * passed into parameter. 
+     * 
+     * @param entry video game
+     * @param platform platforms the game is available on
+     * @param requiredSpecs the required specs to run the game
+     * @param developer developer of the video game
+     * @param hoursPlayed number of hours played on the game
+     * @pre all parameters are valid and complete
+     * @post all attributes now have a value
+     */
     public VideoGame(MediaEntry entry, String platform, String requiredSpecs, String developer, double hoursPlayed) {
         this.entry = entry;
         this.platform = platform;
@@ -13,19 +34,37 @@ public class VideoGame {
         this.hoursPlayed = hoursPlayed;
     }
 
+    /**
+     * Updates by adding the number of hours played. Returns true or false if the update was successful. 
+     * 
+     * @param hours the episode watched
+     * @return if the update was successful (hours is valid)
+     */
     public boolean updateHoursPlayed(double hours) {
-        if (hours <= 0) {
+        boolean updated = false;
+        if (hours <= 0)
             System.out.println("Invalid hours played.");
-            return false;
+        else {
+            this.hoursPlayed = hours;
+            updated = true;
         }
-        this.hoursPlayed = hours;
-        return true;
+        return updated;
     }
 
+    /**
+     * Returns the kind of media entry. 
+     * 
+     * @return the kind of media (video game)
+     */
     public MediaEntry getEntry() {
         return this.entry;
     }
 
+    /**
+     * Returns a string with the video game's attributes, including ratings. 
+     * 
+     * @return the video game's details
+     */
     public String getGameDetails() {
         StringBuilder word = new StringBuilder();
         word.append("Media: Video Game").append("\n");
