@@ -55,8 +55,7 @@ public class MediaVaultApp {
     /**
      * Prints the main menu to the console.
      *
-     * @pre  none
-     * @post menu is printed; no data is modified
+     *
      */
     private static void printMenu() {
         System.out.println("-----------------------------");
@@ -195,9 +194,7 @@ public class MediaVaultApp {
      * to a Completed entry. Rejects the action if the entry is not
      * yet marked Completed.
      *
-     * @pre  userProfile is not null
-     * @post if the entry is Completed, rating and review are set;
-     *       otherwise the entry is unchanged
+     * 
      */
     private static void handleRateAndReview() {
         System.out.println("--- Rate and Review ---");
@@ -226,8 +223,7 @@ public class MediaVaultApp {
     /**
      * Displays all entries in the library to the console.
      *
-     * @pre  userProfile is not null
-     * @post all entries are printed; no data is modified
+     * 
      */
     private static void handleDisplayEntries() {
         System.out.println("--- All Entries ---");

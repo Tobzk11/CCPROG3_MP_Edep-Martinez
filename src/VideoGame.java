@@ -23,8 +23,7 @@ public class VideoGame {
      * @param requiredSpecs the required specs to run the game
      * @param developer developer of the video game
      * @param hoursPlayed number of hours played on the game
-     * @pre all parameters are valid and complete
-     * @post all attributes now have a value
+     * 
      */
     public VideoGame(MediaEntry entry, String platform, String requiredSpecs, String developer, double hoursPlayed) {
         this.entry = entry;

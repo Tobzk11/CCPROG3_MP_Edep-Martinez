@@ -18,9 +18,7 @@ public class Library {
   * Constructs an empty Library with no movies, TV series, or
   * video games.
   *
-  * @pre none
-  * @post movies, tvSeriesList, and videoGames are each initialized
-  * as empty ArrayLists.
+  * 
   */
  public Library() {
   movies = new ArrayList<Movie>();
@@ -32,8 +30,7 @@ public class Library {
   * Adds a Movie to the library's movie list.
   *
   * @param movie the Movie object to add
-  * @pre movie is not null
-  * @post movie is appended to the end of the movies list
+  * 
   */
  public void addMovie(Movie movie) {
     this.movies.add(movie);
@@ -43,8 +40,7 @@ public class Library {
   * Adds a TVSeries to the library's TV series list.
   *
   * @param series the TVSeries object to add
-  * @pre series is not null
-  * @post series is appended to the end of the tvSeriesList
+  * 
   */
  public void addTVSeries(TVSeries series) {
     this.tvSeriesList.add(series);
@@ -54,8 +50,7 @@ public class Library {
   * Adds a VideoGame to the library's video game list.
   *
   * @param videoGame the VideoGame object to add
-  * @pre videoGame is not null
-  * @post videoGame is appended to the end of the videoGames list
+  * 
   */
  public void addVideoGame(VideoGame videoGame) {
   this.videoGames.add(videoGame);
@@ -67,8 +62,7 @@ public class Library {
   * @param title the title to search for
   * @return the matching Movie, or null if no Movie with that
   *         title exists in the library
-  * @pre  title is not null
-  * @post the movies list is unchanged
+  * 
   */
  public Movie findMovie(String title) {
   Movie foundMovie = null;
@@ -85,8 +79,7 @@ public class Library {
   * @param title the title to search for
   * @return the matching TVSeries, or null if no TVSeries with
   *         that title exists in the library
-  * @pre  title is not null
-  * @post the tvSeriesList is unchanged
+  * 
   */
  public TVSeries findTVSeries(String title) {
   TVSeries foundTVSeries = null;
@@ -103,8 +96,7 @@ public class Library {
   * @param title the title to search for
   * @return the matching VideoGame, or null if no VideoGame with
   *         that title exists in the library
-  * @pre  title is not null
-  * @post the videoGames list is unchanged
+  * 
   */
  public VideoGame findVideoGame(String title) {
   VideoGame foundVideoGame = null;
@@ -124,9 +116,7 @@ public class Library {
   *                  or "VideoGame")
   * @return true if an entry was found and removed, false if no
   *         matching entry was found or mediaType was not recognized
-  * @pre  title and mediaType are not null
-  * @post if a match is found, it is removed from the corresponding
-  *       list; otherwise no list is modified
+  * 
   */
  public boolean removeEntry(String title, String mediaType) {
   boolean removed = false;
@@ -155,9 +145,7 @@ public class Library {
   * Prints the details of every entry in the library to the console,
   * grouped by media type (Movies, then TV Series, then Video Games).
   *
-  * @pre  none
-  * @post all entries are printed to standard output; no data is
-  *       modified
+  * 
   */
  public void displayAllEntries() {
   System.out.println("=== Movies ===");
@@ -180,9 +168,7 @@ public class Library {
   *
   * @param status the MediaStatus to filter by (PLANNED, IN_PROGRESS,
   *               or COMPLETED)
-  * @pre  status is not null
-  * @post matching entries are printed to standard output; no data
-  *       is modified
+  * 
   */
  public void filterByStatus(MediaStatus status) {
   for (Movie m : movies) {
@@ -209,10 +195,7 @@ public class Library {
   *
   * @param mediaType the type of media to filter by ("Movie",
   *                  "TVSeries", or "VideoGame")
-  * @pre  mediaType is not null
-  * @post matching entries are printed to standard output; no data
-  *       is modified. If mediaType is not recognized, nothing is
-  *       printed.
+  * 
   */
  public void filterByType(String mediaType) {
   if (mediaType.equalsIgnoreCase("Movie")) {
@@ -237,8 +220,7 @@ public class Library {
   *
   * @return a String summarizing total entries, movie/TV/game counts,
   *         and the average rating of completed entries
-  * @pre  none
-  * @post no data is modified
+  * 
   */
  public String getSummary() {
   int total = movies.size() + tvSeriesList.size() + videoGames.size();

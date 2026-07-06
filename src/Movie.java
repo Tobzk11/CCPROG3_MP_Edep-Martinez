@@ -19,8 +19,7 @@ public class Movie {
      * @param director director
      * @param durationMinutes the duration of the movie in minutes
      * @param releaseYear the year the movie was released
-     * @pre all parameters are valid and complete
-     * @post all attributes now have a value
+     *
      */
     public Movie(MediaEntry entry, String director, int durationMinutes, int releaseYear) {
         this.entry = entry;

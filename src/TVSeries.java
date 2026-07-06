@@ -19,8 +19,7 @@ public class TVSeries {
      * @param totalEps total episodes of the series
      * @param watchedEps episodes watched
      * @param seasonCount number of seasons
-     * @pre all parameters are valid and complete
-     * @post all attributes now have a value
+     *
      */
     public TVSeries(MediaEntry entry, int totalEps, int watchedEps, int seasonCount) {
         this.entry = entry;

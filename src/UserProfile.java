@@ -12,9 +12,7 @@ public class UserProfile {
     /**
      * Constructs a UserProfile with username passed into parameter and an empty library. 
      * 
-     * @param username the username of the UserProfile instance
-     * @pre username is valid and original
-     * @post library is empty and initialized
+     * @param username the username of the UserProfile instance.
      */
     public UserProfile(String username) {
         this.username = username;
