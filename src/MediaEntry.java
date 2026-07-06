@@ -21,9 +21,6 @@ public class MediaEntry {
      * @param title  the title of the media item
      * @param genre  the genre of the media item
      * @param status the initial status (PLANNED or IN_PROGRESS)
-     * @pre  title and genre are not null; status is not null
-     * @post title, genre, and status are set; rating and review
-     *       are both null
      */
     public MediaEntry(String title, String genre, MediaStatus status){
         this.title = title;
@@ -37,8 +34,6 @@ public class MediaEntry {
      * Updates the status of this entry.
      *
      * @param newStatus the new status to apply
-     * @pre  newStatus is not null
-     * @post status is updated to newStatus
      */
     public void updateStatus(MediaStatus newStatus){
         this.status = newStatus;
@@ -53,10 +48,6 @@ public class MediaEntry {
      * @param review a short review/comment
      * @return true if the rating and review were set, false if the
      *         entry's status is not COMPLETED
-     * @pre  none
-     * @post if status is COMPLETED, rating and review are updated
-     *       and true is returned; otherwise neither field changes
-     *       and false is returned
      */
     public boolean setRatingAndReview(int rating, String review) {
         boolean ratingSet = false;
@@ -74,8 +65,6 @@ public class MediaEntry {
      * Checks whether this entry's status is COMPLETED.
      *
      * @return true if status is COMPLETED, false otherwise
-     * @pre  none
-     * @post no data is modified
      */
     public boolean isCompleted(){
         return this.status == MediaStatus.COMPLETED;
@@ -104,8 +93,6 @@ public class MediaEntry {
      * rated yet.
      *
      * @return the rating as an Integer, or null if unrated
-     * @pre  none
-     * @post no data is modified
      */
     public Integer getRating() {
         return this.rating;
