@@ -34,11 +34,11 @@ public class MediaVaultApp {
             String choice = scanner.nextLine().trim();
             System.out.println();
             switch (choice) {
-                case "1": handleAddEntry();       break;
-                case "2": handleUpdateStatus();   break;
-                case "3": handleRateAndReview();  break;
-                case "4": handleDisplayEntries(); break;
-                case "5": handleFilter();         break;
+                case "1": handleAddEntry();          break;
+                case "2": handleUpdateStatus();      break;
+                case "3": handleRateAndReview();     break;
+                case "4": handleDisplayEntries();    break;
+                case "5": handleFilter();            break;
                 case "6": userProfile.viewSummary(); break;
                 case "7":
                     System.out.println("Goodbye!");
@@ -54,8 +54,6 @@ public class MediaVaultApp {
 
     /**
      * Prints the main menu to the console.
-     *
-     *
      */
     private static void printMenu() {
         System.out.println("-----------------------------");
@@ -75,10 +73,6 @@ public class MediaVaultApp {
      * Prompts the user to add a new Movie, TVSeries, or VideoGame
      * to their library. The initial status may only be PLANNED or
      * IN_PROGRESS, per the spec requirement.
-     *
-     * @pre  userProfile is not null
-     * @post a new entry is added to the appropriate library list,
-     *       or nothing changes if the user enters invalid input
      */
     private static void handleAddEntry() {
         System.out.println("--- Add New Entry ---");
@@ -100,63 +94,63 @@ public class MediaVaultApp {
         String statusChoice = scanner.nextLine().trim();
 
         MediaStatus status;
+        boolean validStatus = true;
         if (statusChoice.equals("1"))
             status = MediaStatus.PLANNED;
         else if (statusChoice.equals("2"))
             status = MediaStatus.IN_PROGRESS;
         else {
             System.out.println("Invalid status. Entry not added.");
-            return;
+            status = null;
+            validStatus = false;
         }
 
-        MediaEntry entry = new MediaEntry(title, genre, status);
-        Library lib = userProfile.getLibrary();
+        if (validStatus) {
+            MediaEntry entry = new MediaEntry(title, genre, status);
+            Library lib = userProfile.getLibrary();
 
-        switch (typeChoice) {
-            case "1":
-                System.out.print("Director: ");
-                String director = scanner.nextLine().trim();
-                System.out.print("Duration (minutes): ");
-                int duration = readInt();
-                System.out.print("Release Year: ");
-                int year = readInt();
-                lib.addMovie(new Movie(entry, director, duration, year));
-                System.out.println("Movie \"" + title + "\" added.");
-                break;
-            case "2":
-                System.out.print("Total Episodes: ");
-                int totalEps = readInt();
-                System.out.print("Watched Episodes: ");
-                int watchedEps = readInt();
-                System.out.print("Season Count: ");
-                int seasons = readInt();
-                lib.addTVSeries(new TVSeries(entry, totalEps, watchedEps, seasons));
-                System.out.println("TV Series \"" + title + "\" added.");
-                break;
-            case "3":
-                System.out.print("Platform: ");
-                String platform = scanner.nextLine().trim();
-                System.out.print("Required Specs: ");
-                String specs = scanner.nextLine().trim();
-                System.out.print("Developer: ");
-                String developer = scanner.nextLine().trim();
-                System.out.print("Hours Played: ");
-                double hours = readDouble();
-                lib.addVideoGame(new VideoGame(entry, platform, specs, developer, hours));
-                System.out.println("Video Game \"" + title + "\" added.");
-                break;
-            default:
-                System.out.println("Invalid media type. Entry not added.");
+            switch (typeChoice) {
+                case "1":
+                    System.out.print("Director: ");
+                    String director = scanner.nextLine().trim();
+                    System.out.print("Duration (minutes): ");
+                    int duration = readInt();
+                    System.out.print("Release Year: ");
+                    int year = readInt();
+                    lib.addMovie(new Movie(entry, director, duration, year));
+                    System.out.println("Movie \"" + title + "\" added.");
+                    break;
+                case "2":
+                    System.out.print("Total Episodes: ");
+                    int totalEps = readInt();
+                    System.out.print("Watched Episodes: ");
+                    int watchedEps = readInt();
+                    System.out.print("Season Count: ");
+                    int seasons = readInt();
+                    lib.addTVSeries(new TVSeries(entry, totalEps, watchedEps, seasons));
+                    System.out.println("TV Series \"" + title + "\" added.");
+                    break;
+                case "3":
+                    System.out.print("Platform: ");
+                    String platform = scanner.nextLine().trim();
+                    System.out.print("Required Specs: ");
+                    String specs = scanner.nextLine().trim();
+                    System.out.print("Developer: ");
+                    String developer = scanner.nextLine().trim();
+                    System.out.print("Hours Played: ");
+                    double hours = readDouble();
+                    lib.addVideoGame(new VideoGame(entry, platform, specs, developer, hours));
+                    System.out.println("Video Game \"" + title + "\" added.");
+                    break;
+                default:
+                    System.out.println("Invalid media type. Entry not added.");
+            }
         }
     }
 
     /**
      * Prompts the user to update the status of an existing entry
      * by title and media type.
-     *
-     * @pre  userProfile is not null
-     * @post the matching entry's status is updated, or nothing
-     *       changes if no match is found or input is invalid
      */
     private static void handleUpdateStatus() {
         System.out.println("--- Update Entry Status ---");
@@ -167,34 +161,38 @@ public class MediaVaultApp {
         String typeChoice = scanner.nextLine().trim();
 
         MediaEntry entry = findEntryByTypeChoice(title, typeChoice);
-        if (entry == null) {
+        boolean found = entry != null;
+
+        if (!found) {
             System.out.println("Entry not found.");
-            return;
-        }
+        } else {
+            System.out.println("New status: [1] Planned  [2] In Progress  [3] Completed");
+            System.out.print("Choice: ");
+            String statusChoice = scanner.nextLine().trim();
 
-        System.out.println("New status: [1] Planned  [2] In Progress  [3] Completed");
-        System.out.print("Choice: ");
-        String statusChoice = scanner.nextLine().trim();
+            MediaStatus newStatus;
+            boolean validStatus = true;
+            switch (statusChoice) {
+                case "1": newStatus = MediaStatus.PLANNED;     break;
+                case "2": newStatus = MediaStatus.IN_PROGRESS; break;
+                case "3": newStatus = MediaStatus.COMPLETED;   break;
+                default:
+                    System.out.println("Invalid status.");
+                    newStatus = null;
+                    validStatus = false;
+            }
 
-        MediaStatus newStatus;
-        switch (statusChoice) {
-            case "1": newStatus = MediaStatus.PLANNED;     break;
-            case "2": newStatus = MediaStatus.IN_PROGRESS; break;
-            case "3": newStatus = MediaStatus.COMPLETED;   break;
-            default:
-                System.out.println("Invalid status.");
-                return;
+            if (validStatus) {
+                entry.updateStatus(newStatus);
+                System.out.println("Status updated to " + newStatus + ".");
+            }
         }
-        entry.updateStatus(newStatus);
-        System.out.println("Status updated to " + newStatus + ".");
     }
 
     /**
      * Prompts the user to assign a rating (1-10) and a short review
      * to a Completed entry. Rejects the action if the entry is not
-     * yet marked Completed.
-     *
-     * 
+     * yet marked Completed or if the rating is outside 1-10.
      */
     private static void handleRateAndReview() {
         System.out.println("--- Rate and Review ---");
@@ -205,25 +203,31 @@ public class MediaVaultApp {
         String typeChoice = scanner.nextLine().trim();
 
         MediaEntry entry = findEntryByTypeChoice(title, typeChoice);
+
         if (entry == null) {
             System.out.println("Entry not found.");
-            return;
+        } else if (!entry.isCompleted()) {
+            System.out.println("Cannot rate \"" + entry.getTitle()
+                    + "\": status is " + entry.getStatus()
+                    + ". Mark it as Completed first.");
+        } else {
+            System.out.print("Rating (1-10): ");
+            int rating = readRating();
+
+            if (rating == -1) {
+                System.out.println("Invalid rating. Must be between 1 and 10.");
+            } else {
+                System.out.print("Review: ");
+                String review = scanner.nextLine().trim();
+                boolean success = entry.setRatingAndReview(rating, review);
+                if (success)
+                    System.out.println("Rating and review saved.");
+            }
         }
-
-        System.out.print("Rating (1-10): ");
-        int rating = readInt();
-        System.out.print("Review: ");
-        String review = scanner.nextLine().trim();
-
-        boolean success = entry.setRatingAndReview(rating, review);
-        if (success)
-            System.out.println("Rating and review saved.");
     }
 
     /**
      * Displays all entries in the library to the console.
-     *
-     * 
      */
     private static void handleDisplayEntries() {
         System.out.println("--- All Entries ---");
@@ -233,9 +237,6 @@ public class MediaVaultApp {
     /**
      * Prompts the user to filter entries by status or by media type,
      * then prints the matching entries.
-     *
-     * @pre  userProfile is not null
-     * @post matching entries are printed; no data is modified
      */
     private static void handleFilter() {
         System.out.println("--- Filter Entries ---");
@@ -250,15 +251,18 @@ public class MediaVaultApp {
             System.out.print("Status: ");
             String s = scanner.nextLine().trim();
             MediaStatus status;
+            boolean validStatus = true;
             switch (s) {
                 case "1": status = MediaStatus.PLANNED;     break;
                 case "2": status = MediaStatus.IN_PROGRESS; break;
                 case "3": status = MediaStatus.COMPLETED;   break;
                 default:
                     System.out.println("Invalid status.");
-                    return;
+                    status = null;
+                    validStatus = false;
             }
-            lib.filterByStatus(status);
+            if (validStatus)
+                lib.filterByStatus(status);
 
         } else if (choice.equals("2")) {
             System.out.println("[1] Movie  [2] TV Series  [3] Video Game");
@@ -282,8 +286,6 @@ public class MediaVaultApp {
      * @param title      the title to search for
      * @param typeChoice the menu choice string identifying media type
      * @return the matching MediaEntry, or null if not found
-     * @pre  title and typeChoice are not null
-     * @post library contents are unchanged
      */
     private static MediaEntry findEntryByTypeChoice(String title, String typeChoice) {
         Library lib = userProfile.getLibrary();
@@ -303,12 +305,28 @@ public class MediaVaultApp {
     }
 
     /**
+     * Reads a rating integer from the console. Returns -1 if the
+     * value entered is not a number or is outside the range 1-10.
+     *
+     * @return the rating entered (1-10), or -1 if invalid
+     */
+    private static int readRating() {
+        int rating;
+        try {
+            rating = Integer.parseInt(scanner.nextLine().trim());
+            if (rating < 1 || rating > 10)
+                rating = -1;
+        } catch (NumberFormatException e) {
+            rating = -1;
+        }
+        return rating;
+    }
+
+    /**
      * Reads an integer from the console, re-prompting if the input
      * is not a valid integer.
      *
      * @return the integer entered by the user
-     * @pre  none
-     * @post scanner has consumed the integer line
      */
     private static int readInt() {
         while (true) {
@@ -326,8 +344,6 @@ public class MediaVaultApp {
      * is not a valid decimal number.
      *
      * @return the double entered by the user
-     * @pre  none
-     * @post scanner has consumed the double line
      */
     private static double readDouble() {
         while (true) {
