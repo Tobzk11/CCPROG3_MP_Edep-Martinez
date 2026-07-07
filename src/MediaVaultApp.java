@@ -108,42 +108,68 @@ public class MediaVaultApp {
         if (validStatus) {
             MediaEntry entry = new MediaEntry(title, genre, status);
             Library lib = userProfile.getLibrary();
+            boolean alreadyExists = false;
 
-            switch (typeChoice) {
-                case "1":
-                    System.out.print("Director: ");
-                    String director = scanner.nextLine().trim();
-                    System.out.print("Duration (minutes): ");
-                    int duration = readInt();
-                    System.out.print("Release Year: ");
-                    int year = readInt();
-                    lib.addMovie(new Movie(entry, director, duration, year));
-                    System.out.println("Movie \"" + title + "\" added.");
-                    break;
-                case "2":
-                    System.out.print("Total Episodes: ");
-                    int totalEps = readInt();
-                    System.out.print("Watched Episodes: ");
-                    int watchedEps = readInt();
-                    System.out.print("Season Count: ");
-                    int seasons = readInt();
-                    lib.addTVSeries(new TVSeries(entry, totalEps, watchedEps, seasons));
-                    System.out.println("TV Series \"" + title + "\" added.");
-                    break;
-                case "3":
-                    System.out.print("Platform: ");
-                    String platform = scanner.nextLine().trim();
-                    System.out.print("Required Specs: ");
-                    String specs = scanner.nextLine().trim();
-                    System.out.print("Developer: ");
-                    String developer = scanner.nextLine().trim();
-                    System.out.print("Hours Played: ");
-                    double hours = readDouble();
-                    lib.addVideoGame(new VideoGame(entry, platform, specs, developer, hours));
-                    System.out.println("Video Game \"" + title + "\" added.");
-                    break;
-                default:
-                    System.out.println("Invalid media type. Entry not added.");
+            if (typeChoice.equals("1") && lib.findMovie(title) != null)
+                alreadyExists = true;
+            else if (typeChoice.equals("2") && lib.findTVSeries(title) != null)
+                alreadyExists = true;
+            else if (typeChoice.equals("3") && lib.findVideoGame(title) != null)
+                alreadyExists = true;
+
+            if (alreadyExists) {
+                System.out.println("\"" + title + "\" already exists in your library.");
+            } else {
+                switch (typeChoice) {
+                    case "1":
+                        System.out.print("Director: ");
+                        String director = scanner.nextLine().trim();
+                        System.out.print("Duration (minutes): ");
+                        int duration = readInt();
+                        System.out.print("Release Year: ");
+                        int year = readInt();
+                        if (duration <= 0 || year <= 0) {
+                            System.out.println("Invalid values. Duration and year must be positive.");
+                        } else {
+                            lib.addMovie(new Movie(entry, director, duration, year));
+                            System.out.println("Movie \"" + title + "\" added.");
+                        }
+                        break;
+                    case "2":
+                        System.out.print("Total Episodes: ");
+                        int totalEps = readInt();
+                        System.out.print("Watched Episodes: ");
+                        int watchedEps = readInt();
+                        System.out.print("Season Count: ");
+                        int seasons = readInt();
+                        if (totalEps <= 0 || seasons <= 0) {
+                            System.out.println("Invalid values. Total episodes and seasons must be positive.");
+                        } else if (watchedEps < 0 || watchedEps > totalEps) {
+                            System.out.println("Invalid watched episodes. Must be between 0 and " + totalEps + ".");
+                        } else {
+                            lib.addTVSeries(new TVSeries(entry, totalEps, watchedEps, seasons));
+                            System.out.println("TV Series \"" + title + "\" added.");
+                        }
+                        break;
+                    case "3":
+                        System.out.print("Platform: ");
+                        String platform = scanner.nextLine().trim();
+                        System.out.print("Required Specs: ");
+                        String specs = scanner.nextLine().trim();
+                        System.out.print("Developer: ");
+                        String developer = scanner.nextLine().trim();
+                        System.out.print("Hours Played: ");
+                        double hours = readDouble();
+                        if (hours < 0) {
+                            System.out.println("Invalid hours played. Cannot be negative.");
+                        } else {
+                            lib.addVideoGame(new VideoGame(entry, platform, specs, developer, hours));
+                            System.out.println("Video Game \"" + title + "\" added.");
+                        }
+                        break;
+                    default:
+                        System.out.println("Invalid media type. Entry not added.");
+                }
             }
         }
     }
@@ -215,7 +241,7 @@ public class MediaVaultApp {
             int rating = readRating();
 
             if (rating == -1) {
-                System.out.println("Invalid rating. Must be between 1 and 10.");
+                System.out.println("Invalid rating. Must be an Integer between 1 and 10.");
             } else {
                 System.out.print("Review: ");
                 String review = scanner.nextLine().trim();
