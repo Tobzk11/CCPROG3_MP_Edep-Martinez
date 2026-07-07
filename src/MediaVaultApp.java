@@ -116,7 +116,6 @@ public class MediaVaultApp {
                 alreadyExists = true;
             else if (typeChoice.equals("3") && lib.findVideoGame(title) != null)
                 alreadyExists = true;
-
             if (alreadyExists) {
                 System.out.println("\"" + title + "\" already exists in your library.");
             } else {
@@ -185,7 +184,6 @@ public class MediaVaultApp {
         System.out.println("Media type: [1] Movie  [2] TV Series  [3] Video Game");
         System.out.print("Choice: ");
         String typeChoice = scanner.nextLine().trim();
-
         MediaEntry entry = findEntryByTypeChoice(title, typeChoice);
         boolean found = entry != null;
 
@@ -195,7 +193,6 @@ public class MediaVaultApp {
             System.out.println("New status: [1] Planned  [2] In Progress  [3] Completed");
             System.out.print("Choice: ");
             String statusChoice = scanner.nextLine().trim();
-
             MediaStatus newStatus;
             boolean validStatus = true;
             switch (statusChoice) {
@@ -207,10 +204,35 @@ public class MediaVaultApp {
                     newStatus = null;
                     validStatus = false;
             }
-
             if (validStatus) {
                 entry.updateStatus(newStatus);
                 System.out.println("Status updated to " + newStatus + ".");
+
+                if (typeChoice.equals("2")) {
+                    TVSeries series = userProfile.getLibrary().findTVSeries(title);
+                    System.out.print("Update watched episodes? [y/n]: ");
+                    String answer = scanner.nextLine().trim();
+                    if (answer.equalsIgnoreCase("y")) {
+                        System.out.print("Watched episodes: ");
+                        int episodes = readInt();
+                        boolean updated = series.updateWatchedEpisodes(episodes);
+                        if (updated)
+                            System.out.println("Watched episodes updated.");
+                    }
+                }
+
+                if (typeChoice.equals("3")) {
+                    VideoGame game = userProfile.getLibrary().findVideoGame(title);
+                    System.out.print("Update hours played? [y/n]: ");
+                    String answer = scanner.nextLine().trim();
+                    if (answer.equalsIgnoreCase("y")) {
+                        System.out.print("Hours played: ");
+                        double hours = readDouble();
+                        boolean updated = game.updateHoursPlayed(hours);
+                        if (updated)
+                            System.out.println("Hours played updated.");
+                    }
+                }
             }
         }
     }
