@@ -192,7 +192,7 @@ public class MediaVaultApp {
     /**
      * Prompts the user to assign a rating (1-10) and a short review
      * to a Completed entry. Rejects the action if the entry is not
-     * yet marked Completed or if the rating is outside 1-10.
+     * yet marked Completed or if the rating is outside 1-10
      */
     private static void handleRateAndReview() {
         System.out.println("--- Rate and Review ---");
