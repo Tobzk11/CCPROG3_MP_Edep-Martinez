@@ -8,10 +8,10 @@
  * @author Simon Jaxith T. Martinez
  */
 public class VideoGame {
-    private MediaEntry entry;
-    private String platform;
-    private String requiredSpecs;
-    private String developer;
+    private final MediaEntry ENTRY;
+    private final String PLATFORM;
+    private final String REQUIRED_SPECS;
+    private final String DEVELOPER;
     private double hoursPlayed;
 
     /**
@@ -26,10 +26,10 @@ public class VideoGame {
      * 
      */
     public VideoGame(MediaEntry entry, String platform, String requiredSpecs, String developer, double hoursPlayed) {
-        this.entry = entry;
-        this.platform = platform;
-        this.requiredSpecs = requiredSpecs;
-        this.developer = developer;
+        this.ENTRY = entry;
+        this.PLATFORM = platform;
+        this.REQUIRED_SPECS = requiredSpecs;
+        this.DEVELOPER = developer;
         this.hoursPlayed = hoursPlayed;
     }
 
@@ -37,7 +37,7 @@ public class VideoGame {
      * Updates by adding the number of hours played. Returns true or false if the update was successful. 
      * 
      * @param hours the episode watched
-     * @return if the update was successful (hours is valid)
+     * @return true if the update was successful, false if hours is not positive
      */
     public boolean updateHoursPlayed(double hours) {
         boolean updated = false;
@@ -56,7 +56,7 @@ public class VideoGame {
      * @return the kind of media (video game)
      */
     public MediaEntry getEntry() {
-        return this.entry;
+        return this.ENTRY;
     }
 
     /**
@@ -67,15 +67,15 @@ public class VideoGame {
     public String getGameDetails() {
         StringBuilder word = new StringBuilder();
         word.append("Media: Video Game").append("\n");
-        word.append("Title: ").append(entry.getTitle()).append("\n");
-        word.append("Genre: ").append(entry.getGenre()).append("\n");
-        word.append("Platform: ").append(this.platform).append("\n");
-        word.append("Required Specs: ").append(this.requiredSpecs).append("\n");
-        word.append("Developer: ").append(this.developer).append("\n");
+        word.append("Title: ").append(ENTRY.getTitle()).append("\n");
+        word.append("Genre: ").append(ENTRY.getGenre()).append("\n");
+        word.append("Platform: ").append(this.PLATFORM).append("\n");
+        word.append("Required Specs: ").append(this.REQUIRED_SPECS).append("\n");
+        word.append("Developer: ").append(this.DEVELOPER).append("\n");
         word.append("Hours Played: ").append(this.hoursPlayed).append("\n");
-        word.append("Status: ").append(entry.getStatus()).append("\n");
-        if (entry.getRating() != null)
-            word.append("Rating: ").append(entry.getRating()).append("/10\n");
+        word.append("Status: ").append(ENTRY.getStatus()).append("\n");
+        if (ENTRY.getRating() != null)
+            word.append("Rating: ").append(ENTRY.getRating()).append("/10\n");
         return word.toString();
     }
 }

@@ -6,8 +6,8 @@
  * @author Simon Jaxith T. Martinez
  */
 public class UserProfile {
-    private String username;
-    private Library library;
+    private final String USERNAME;
+    private final Library LIBRARY;
 
     /**
      * Constructs a UserProfile with username passed into parameter and an empty library. 
@@ -15,8 +15,8 @@ public class UserProfile {
      * @param username the username of the UserProfile instance.
      */
     public UserProfile(String username) {
-        this.username = username;
-        library = new Library();
+        this.USERNAME = username;
+        LIBRARY = new Library();
     }
 
     /**
@@ -25,7 +25,7 @@ public class UserProfile {
      * @return the library of the user
      */
     public Library getLibrary() {
-        return this.library;
+        return this.LIBRARY;
     }
 
     /**
@@ -33,7 +33,7 @@ public class UserProfile {
      * 
      */
     public void viewSummary() {
-        System.out.printf("Hello, %s!\n", this.username);
-        System.out.println(this.library.getSummary());
+        System.out.printf("Hello, %s!\n", this.USERNAME);
+        System.out.println(this.LIBRARY.getSummary());
     }
 }

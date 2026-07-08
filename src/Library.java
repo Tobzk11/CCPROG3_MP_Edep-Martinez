@@ -28,7 +28,9 @@ public class Library {
 
  /**
   * Adds a Movie to the library's movie list.
-  *
+  * <p>
+  * <b>Postcondition:</b> the movie is added to the respective arraylist
+  * </p>
   * @param movie the Movie object to add
   * 
   */
@@ -38,7 +40,9 @@ public class Library {
 
  /**
   * Adds a TVSeries to the library's TV series list.
-  *
+  * <p>
+  * <b>Postcondition:</b> the series is added to the respective arraylist
+  * </p>
   * @param series the TVSeries object to add
   * 
   */
@@ -48,7 +52,9 @@ public class Library {
 
  /**
   * Adds a VideoGame to the library's video game list.
-  *
+  * <p>
+  * <b>Postcondition:</b> the game is added to the respective arraylist
+  * </p>
   * @param videoGame the VideoGame object to add
   * 
   */
@@ -110,7 +116,10 @@ public class Library {
   * Removes the entry with the given title from the list matching
   * the given media type. The media type is matched case-insensitively
   * against "Movie", "TVSeries", or "VideoGame".
-  *
+  * <p>
+  * <b>Precondition:</b> mediaType is valid <br>
+  * <b>Postcondition:</b> the movie/series/game is removed from the arraylist
+  * </p>
   * @param title     the title of the entry to remove
   * @param mediaType the type of media to search ("Movie", "TVSeries",
   *                  or "VideoGame")
@@ -165,7 +174,9 @@ public class Library {
  /**
   * Prints the details of every entry across all three media types
   * whose status matches the given MediaStatus.
-  *
+  * <p>
+  * <b>Postcondition:</b> prints all movies, series and games that have the status passed into function
+  * </p>
   * @param status the MediaStatus to filter by (PLANNED, IN_PROGRESS,
   *               or COMPLETED)
   * 
@@ -192,7 +203,9 @@ public class Library {
   * Prints the details of every entry belonging to the given media
   * type. The media type is matched case-insensitively against
   * "Movie", "TVSeries", or "VideoGame".
-  *
+  * <p>
+  * <b>Postcondition:</b> prints all media of the type passed into function
+  * </p>
   * @param mediaType the type of media to filter by ("Movie",
   *                  "TVSeries", or "VideoGame")
   * 
@@ -217,7 +230,9 @@ public class Library {
   * Builds a summary string reporting the total number of entries
   * in the library, the count of each media type, and the average
   * rating across all Completed entries that have been rated.
-  *
+  * <p>
+  * <b>Postcondition:</b> prints the number of movies, series and games; their average ratings
+  * </p>
   * @return a String summarizing total entries, movie/TV/game counts,
   *         and the average rating of completed entries
   * 

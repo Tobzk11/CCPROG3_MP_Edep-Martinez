@@ -7,8 +7,8 @@
  */
 public class MediaEntry {
 
-    private String title;
-    private String genre;
+    private final String TITLE;
+    private final String GENRE;
     private MediaStatus status;
     private Integer rating;
     private String review;
@@ -23,8 +23,8 @@ public class MediaEntry {
      * @param status the initial status (PLANNED or IN_PROGRESS)
      */
     public MediaEntry(String title, String genre, MediaStatus status){
-        this.title = title;
-        this.genre = genre;
+        this.TITLE = title;
+        this.GENRE = genre;
         this.status = status;
         this.rating = null;
         this.review = null;
@@ -43,7 +43,10 @@ public class MediaEntry {
      * Attempts to set a rating and review for this entry. This will
      * only succeed if the entry's status is COMPLETED, enforcing the
      * rule that ratings may only be attached to completed media.
-     *
+     * <p>
+     * <b>Precondition:</b> rating is an integer from 1 to 10 <br>
+     * <b>Postcondition:</b> rating and review attributes are set <br>
+     * </p>
      * @param rating the rating to assign (e.g. 1-10)
      * @param review a short review/comment
      * @return true if the rating and review were set, false if the
@@ -76,7 +79,7 @@ public class MediaEntry {
      * @return the title
      */
     public String getTitle(){
-        return this.title;
+        return this.TITLE;
     }
 
     /**
@@ -104,6 +107,6 @@ public class MediaEntry {
      * @return the genre
      */
     public String getGenre() {
-        return this.genre;
+        return this.GENRE;
     }
 }

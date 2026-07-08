@@ -7,10 +7,10 @@
  * @author Simon Jaxith T. Martinez
  */
 public class Movie {
-    private MediaEntry entry;
-    private String director;
-    private int durationMinutes;
-    private int releaseYear;
+    private final MediaEntry ENTRY;
+    private final String DIRECTOR;
+    private final int DURATION_MINUTES;
+    private final int RELEASE_YEAR;
 
     /**
      * Constructs a Movie with entry, director, durationMinutes and releaseYear passed into parameter. 
@@ -22,10 +22,10 @@ public class Movie {
      *
      */
     public Movie(MediaEntry entry, String director, int durationMinutes, int releaseYear) {
-        this.entry = entry;
-        this.director = director;
-        this.durationMinutes = durationMinutes;
-        this.releaseYear = releaseYear;
+        this.ENTRY = entry;
+        this.DIRECTOR = director;
+        this.DURATION_MINUTES = durationMinutes;
+        this.RELEASE_YEAR = releaseYear;
     }
 
     /**
@@ -34,7 +34,7 @@ public class Movie {
      * @return the kind of media (movie)
      */
     public MediaEntry getEntry() {
-        return this.entry;
+        return this.ENTRY;
     }
 
     /**
@@ -45,14 +45,14 @@ public class Movie {
     public String getMovieDetails() {
         StringBuilder word = new StringBuilder();
         word.append("Media: Movie").append("\n");
-        word.append("Title: ").append(entry.getTitle()).append("\n");
-        word.append("Genre: ").append(entry.getGenre()).append("\n");
-        word.append("Director: ").append(this.director).append("\n");
-        word.append("Duration: ").append(this.durationMinutes).append(" min\n");
-        word.append("Release Year: ").append(this.releaseYear).append("\n");
-        word.append("Status: ").append(entry.getStatus()).append("\n");
-        if (entry.getRating() != null)
-            word.append("Rating: ").append(entry.getRating()).append("/10\n");
+        word.append("Title: ").append(ENTRY.getTitle()).append("\n");
+        word.append("Genre: ").append(ENTRY.getGenre()).append("\n");
+        word.append("Director: ").append(this.DIRECTOR).append("\n");
+        word.append("Duration: ").append(this.DURATION_MINUTES).append(" min\n");
+        word.append("Release Year: ").append(this.RELEASE_YEAR).append("\n");
+        word.append("Status: ").append(ENTRY.getStatus()).append("\n");
+        if (ENTRY.getRating() != null)
+            word.append("Rating: ").append(ENTRY.getRating()).append("/10\n");
         return word.toString();
     }
 }
