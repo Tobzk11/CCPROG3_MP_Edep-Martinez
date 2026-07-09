@@ -39,8 +39,8 @@ public class MediaVaultApp {
                 case "3": handleRateAndReview();     break;
                 case "4": handleDisplayEntries();    break;
                 case "5": handleFilter();            break;
-                case "6": userProfile.viewSummary(); break;
-                case "7":
+                case "7": handleRemoveEntry();       break;
+                case "8":
                     System.out.println("Goodbye!");
                     running = false;
                     break;
@@ -65,7 +65,8 @@ public class MediaVaultApp {
         System.out.println("[4] Display all entries");
         System.out.println("[5] Filter entries");
         System.out.println("[6] View library summary");
-        System.out.println("[7] Exit");
+        System.out.println("[7] Remove an entry");
+        System.out.println("[8] Exit");
         System.out.print("Choice: ");
     }
 
@@ -401,6 +402,39 @@ public class MediaVaultApp {
             } catch (NumberFormatException e) {
                 System.out.print("Please enter a valid number: ");
             }
+        }
+    }
+
+    /**
+     * Prompts the user to remove an existing entry from the library
+     * by title and media type
+     */
+    private static void handleRemoveEntry() {
+        System.out.println("--- Remove Entry ---");
+        System.out.print("Title: ");
+        String title = scanner.nextLine().trim();
+        System.out.println("Media type: [1] Movie  [2] TV Series  [3] Video Game");
+        System.out.print("Choice: ");
+        String typeChoice = scanner.nextLine().trim();
+
+        String mediaType;
+        boolean validType = true;
+        switch (typeChoice) {
+            case "1": mediaType = "Movie";     break;
+            case "2": mediaType = "TVSeries";  break;
+            case "3": mediaType = "VideoGame"; break;
+            default:
+                System.out.println("Invalid media type.");
+                mediaType = null;
+                validType = false;
+        }
+
+        if (validType) {
+            boolean removed = userProfile.getLibrary().removeEntry(title, mediaType);
+            if (removed)
+                System.out.println("\"" + title + "\" removed from your library.");
+            else
+                System.out.println("\"" + title + "\" not found in your library.");
         }
     }
 }
