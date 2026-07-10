@@ -46,7 +46,7 @@ public class MediaVaultApp {
                     running = false;
                     break;
                 default:
-                    System.out.println("Invalid choice. Please enter 1-7.");
+                    System.out.println("Invalid choice. Please enter 1-8.");
             }
             System.out.println();
         }
