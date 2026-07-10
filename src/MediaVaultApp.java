@@ -92,7 +92,6 @@ public class MediaVaultApp {
         System.out.println("Initial status:");
         System.out.println("[1] Planned");
         System.out.println("[2] In Progress");
-        System.out.println("[3] Completed");
         System.out.print("Status: ");
         String statusChoice = scanner.nextLine().trim();
 
@@ -102,8 +101,6 @@ public class MediaVaultApp {
             status = MediaStatus.PLANNED;
         else if (statusChoice.equals("2"))
             status = MediaStatus.IN_PROGRESS;
-        else if (statusChoice.equals("3"))
-            status = MediaStatus.COMPLETED;
         else {
             System.out.println("Invalid status. Entry not added.");
             status = null;
