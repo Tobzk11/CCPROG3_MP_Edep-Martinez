@@ -39,6 +39,7 @@ public class MediaVaultApp {
                 case "3": handleRateAndReview();     break;
                 case "4": handleDisplayEntries();    break;
                 case "5": handleFilter();            break;
+                case "6": userProfile.viewSummary(); break;
                 case "7": handleRemoveEntry();       break;
                 case "8":
                     System.out.println("Goodbye!");
@@ -91,6 +92,7 @@ public class MediaVaultApp {
         System.out.println("Initial status:");
         System.out.println("[1] Planned");
         System.out.println("[2] In Progress");
+        System.out.println("[3] Completed");
         System.out.print("Status: ");
         String statusChoice = scanner.nextLine().trim();
 
@@ -100,6 +102,8 @@ public class MediaVaultApp {
             status = MediaStatus.PLANNED;
         else if (statusChoice.equals("2"))
             status = MediaStatus.IN_PROGRESS;
+        else if (statusChoice.equals("3"))
+            status = MediaStatus.COMPLETED;
         else {
             System.out.println("Invalid status. Entry not added.");
             status = null;

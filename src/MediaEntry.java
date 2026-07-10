@@ -109,4 +109,13 @@ public class MediaEntry {
     public String getGenre() {
         return this.GENRE;
     }
+
+    /**
+     * Returns the review of this entry.
+     *
+     * @return the review
+     */
+    public String getReview() {
+        return this.review;
+    }
 }

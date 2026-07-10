@@ -68,8 +68,10 @@ public class TVSeries {
         word.append("Watched Episodes: ").append(this.watchedEpisodes).append("\n");
         word.append("Seasons: ").append(this.SEASON_COUNT).append("\n");
         word.append("Status: ").append(ENTRY.getStatus()).append("\n");
-        if (ENTRY.getRating() != null)
+        if (ENTRY.getRating() != null) {
             word.append("Rating: ").append(ENTRY.getRating()).append("/10\n");
+            word.append("Review: ").append(ENTRY.getReview()).append("\n");
+        }
         return word.toString();
     }
 }

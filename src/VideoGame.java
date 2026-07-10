@@ -74,8 +74,10 @@ public class VideoGame {
         word.append("Developer: ").append(this.DEVELOPER).append("\n");
         word.append("Hours Played: ").append(this.hoursPlayed).append("\n");
         word.append("Status: ").append(ENTRY.getStatus()).append("\n");
-        if (ENTRY.getRating() != null)
+        if (ENTRY.getRating() != null) {
             word.append("Rating: ").append(ENTRY.getRating()).append("/10\n");
+            word.append("Review: ").append(ENTRY.getReview()).append("\n");
+        }
         return word.toString();
     }
 }

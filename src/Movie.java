@@ -51,8 +51,10 @@ public class Movie {
         word.append("Duration: ").append(this.DURATION_MINUTES).append(" min\n");
         word.append("Release Year: ").append(this.RELEASE_YEAR).append("\n");
         word.append("Status: ").append(ENTRY.getStatus()).append("\n");
-        if (ENTRY.getRating() != null)
+        if (ENTRY.getRating() != null) {
             word.append("Rating: ").append(ENTRY.getRating()).append("/10\n");
+            word.append("Review: ").append(ENTRY.getReview()).append("\n");
+        }
         return word.toString();
     }
 }
