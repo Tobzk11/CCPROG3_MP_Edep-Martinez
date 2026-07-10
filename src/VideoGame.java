@@ -41,7 +41,7 @@ public class VideoGame {
      */
     public boolean updateHoursPlayed(double hours) {
         boolean updated = false;
-        if (hours <= 0)
+        if (hours < 0)
             System.out.println("Invalid hours played.");
         else {
             this.hoursPlayed = hours;
