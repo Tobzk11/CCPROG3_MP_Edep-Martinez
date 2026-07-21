@@ -5,13 +5,13 @@
  *
  * @author Tobias Raian M. Edep
  */
-public class MediaEntry {
+public abstract class MediaEntry {
 
-    private final String TITLE;
-    private final String GENRE;
-    private MediaStatus status;
-    private Integer rating;
-    private String review;
+    protected final String TITLE;
+    protected final String GENRE;
+    protected MediaStatus status;
+    protected Integer rating;
+    protected String review;
 
     /**
      * Constructs a new MediaEntry with the given title and genre.
@@ -36,6 +36,7 @@ public class MediaEntry {
      * @param newStatus the new status to apply
      */
     public void updateStatus(MediaStatus newStatus){
+
         this.status = newStatus;
     }
 
@@ -70,6 +71,7 @@ public class MediaEntry {
      * @return true if status is COMPLETED, false otherwise
      */
     public boolean isCompleted(){
+
         return this.status == MediaStatus.COMPLETED;
     }
 
@@ -79,6 +81,7 @@ public class MediaEntry {
      * @return the title
      */
     public String getTitle(){
+
         return this.TITLE;
     }
 
@@ -88,6 +91,7 @@ public class MediaEntry {
      * @return the MediaStatus
      */
     public MediaStatus getStatus() {
+
         return this.status;
     }
     
@@ -98,6 +102,7 @@ public class MediaEntry {
      * @return the rating as an Integer, or null if unrated
      */
     public Integer getRating() {
+
         return this.rating;
     }
 
@@ -107,6 +112,7 @@ public class MediaEntry {
      * @return the genre
      */
     public String getGenre() {
+
         return this.GENRE;
     }
 
@@ -118,4 +124,8 @@ public class MediaEntry {
     public String getReview() {
         return this.review;
     }
+
+    public abstract String getMediaType();
+
+    public abstract String getDetails();
 }
