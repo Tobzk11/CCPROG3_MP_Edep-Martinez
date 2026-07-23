@@ -19,7 +19,7 @@ public class MediaVaultView extends Application {
         Group root = new Group();
         Scene scene = new Scene(root, 500, 500, Color.BLACK);
 
-        Image icon = new Image("6192518233113691.jpg"); // images
+        Image icon = new Image("icon.jpg"); // images
         Image bgImage = new Image("main.png");
 
         ImageView bgImg = new ImageView(bgImage); // background image
