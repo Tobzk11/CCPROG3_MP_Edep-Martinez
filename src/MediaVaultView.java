@@ -8,7 +8,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.*;
 
-public class UserInterface extends Application {
+public class MediaVaultView extends Application {
 
     public static void main(String[] args) {
         launch(args);
