@@ -1,229 +1,153 @@
 import java.util.ArrayList;
 
 /**
- * Manages the user's collection of media entries, organized into three
- * separate lists by media type: Movie, TVSeries, and VideoGame.
- * Provides operations to add, remove, find, display, filter, and
- * summarize the contents of the library.
+ * Manages the user's collection of media entries in a single polymorphic
+ * list of MediaEntry objects. Provides operations to add, remove, find,
+ * filter, search, and summarize the contents of the library.
  *
  * @author Tobias Raian M. Edep
  */
 public class Library {
 
- private ArrayList<Movie> movies;
- private ArrayList<TVSeries> tvSeriesList;
- private ArrayList<VideoGame> videoGames;
+ private final ArrayList<MediaEntry> ENTRIES;
 
  /**
-  * Constructs an empty Library with no movies, TV series, or
-  * video games.
+  * Constructs an empty Library with no media entries.
   *
-  * 
+  *
   */
  public Library() {
-  movies = new ArrayList<Movie>();
-  tvSeriesList = new ArrayList<TVSeries>();
-  videoGames = new ArrayList<VideoGame>();
+  ENTRIES = new ArrayList<MediaEntry>();
  }
 
  /**
-  * Adds a Movie to the library's movie list.
+  * Adds a MediaEntry to the library. Accepts any subclass of
+  * MediaEntry (Movie, TVSeries, or VideoGame).
   * <p>
-  * <b>Postcondition:</b> the movie is added to the respective arraylist
+  * <b>Precondition:</b> entry is not null <br>
+  * <b>Postcondition:</b> the entry is added to the arraylist
   * </p>
-  * @param movie the Movie object to add
-  * 
-  */
- public void addMovie(Movie movie) {
-    this.movies.add(movie);
- }
-
- /**
-  * Adds a TVSeries to the library's TV series list.
-  * <p>
-  * <b>Postcondition:</b> the series is added to the respective arraylist
-  * </p>
-  * @param series the TVSeries object to add
-  * 
-  */
- public void addTVSeries(TVSeries series) {
-    this.tvSeriesList.add(series);
- }
-
- /**
-  * Adds a VideoGame to the library's video game list.
-  * <p>
-  * <b>Postcondition:</b> the game is added to the respective arraylist
-  * </p>
-  * @param videoGame the VideoGame object to add
-  * 
-  */
- public void addVideoGame(VideoGame videoGame) {
-  this.videoGames.add(videoGame);
- }
- /**
-  * Searches the movie list for a Movie whose title matches the
-  * given title, ignoring case.
+  * @param entry the MediaEntry object to add
   *
-  * @param title the title to search for
-  * @return the matching Movie, or null if no Movie with that
-  *         title exists in the library
-  * 
   */
- public Movie findMovie(String title) {
-  Movie foundMovie = null;
-  for (Movie m : movies)
-    if (m.getEntry().getTitle().equalsIgnoreCase(title))
-      foundMovie = m;
-  return foundMovie;
+ public void addEntry(MediaEntry entry) {
+  this.ENTRIES.add(entry);
  }
 
  /**
-  * Searches the TV series list for a TVSeries whose title matches
-  * the given title, ignoring case.
-  *
-  * @param title the title to search for
-  * @return the matching TVSeries, or null if no TVSeries with
-  *         that title exists in the library
-  * 
-  */
- public TVSeries findTVSeries(String title) {
-  TVSeries foundTVSeries = null;
-  for (TVSeries t : tvSeriesList) 
-   if (t.getEntry().getTitle().equalsIgnoreCase(title))
-    foundTVSeries = t;
-  return foundTVSeries;
- }
-
- /**
-  * Searches the video game list for a VideoGame whose title
-  * matches the given title, ignoring case.
-  *
-  * @param title the title to search for
-  * @return the matching VideoGame, or null if no VideoGame with
-  *         that title exists in the library
-  * 
-  */
- public VideoGame findVideoGame(String title) {
-  VideoGame foundVideoGame = null;
-  for (VideoGame v : videoGames)
-   if (v.getEntry().getTitle().equalsIgnoreCase(title))
-    foundVideoGame = v;
-  return foundVideoGame;
- }
-
- /**
-  * Removes the entry with the given title from the list matching
-  * the given media type. The media type is matched case-insensitively
-  * against "Movie", "TVSeries", or "VideoGame".
+  * Removes the entry with the given title from the library,
+  * ignoring case.
   * <p>
-  * <b>Precondition:</b> mediaType is valid <br>
-  * <b>Postcondition:</b> the movie/series/game is removed from the arraylist
+  * <b>Precondition:</b> title is not null <br>
+  * <b>Postcondition:</b> the matching entry is removed from the arraylist
   * </p>
-  * @param title     the title of the entry to remove
-  * @param mediaType the type of media to search ("Movie", "TVSeries",
-  *                  or "VideoGame")
+  * @param title the title of the entry to remove
   * @return true if an entry was found and removed, false if no
-  *         matching entry was found or mediaType was not recognized
-  * 
+  *         matching entry was found
+  *
   */
- public boolean removeEntry(String title, String mediaType) {
+ public boolean removeEntry(String title) {
   boolean removed = false;
-  if (mediaType.equalsIgnoreCase("Movie")) {
-   Movie m = findMovie(title);
-   if (m != null) {
-    movies.remove(m);
-    removed = true;
-   }
-  } else if (mediaType.equalsIgnoreCase("TVSeries")) {
-   TVSeries t = findTVSeries(title);
-   if (t != null) {
-    tvSeriesList.remove(t);
-    removed = true;
-   }
-  } else if (mediaType.equalsIgnoreCase("VideoGame")) {
-   VideoGame g = findVideoGame(title);
-   if (g != null) {
-    videoGames.remove(g);
-    removed = true;
-   }
+  MediaEntry found = findEntry(title);
+  if (found != null) {
+   ENTRIES.remove(found);
+   removed = true;
   }
   return removed;
  }
+
  /**
-  * Prints the details of every entry in the library to the console,
-  * grouped by media type (Movies, then TV Series, then Video Games).
+  * Searches the library for an entry whose title matches the
+  * given title, ignoring case.
   *
-  * 
+  * @param title the title to search for
+  * @return the matching MediaEntry, or null if no entry with that
+  *         title exists in the library
+  *
   */
- public void displayAllEntries() {
-  System.out.println("=== Movies ===");
-  for (Movie m : movies) {
-   System.out.println(m.getMovieDetails());
-  }
-  System.out.println("=== TV Series ===");
-  for (TVSeries t : tvSeriesList) {
-   System.out.println(t.getSeriesDetails());
-  }
-  System.out.println("=== Video Games ===");
-  for (VideoGame v : videoGames) {
-   System.out.println(v.getGameDetails());
-  }
+ public MediaEntry findEntry(String title) {
+  MediaEntry result = null;
+  for (MediaEntry e : ENTRIES)
+   if (e.getTitle().equalsIgnoreCase(title))
+    result = e;
+  return result;
  }
 
  /**
-  * Prints the details of every entry across all three media types
-  * whose status matches the given MediaStatus.
+  * Builds a list of every entry whose status matches the given
+  * MediaStatus.
   * <p>
-  * <b>Postcondition:</b> prints all movies, series and games that have the status passed into function
+  * <b>Precondition:</b> status is not null <br>
+  * <b>Postcondition:</b> the library contents are unchanged
   * </p>
   * @param status the MediaStatus to filter by (PLANNED, IN_PROGRESS,
   *               or COMPLETED)
-  * 
+  * @return a list of entries matching the given status
+  *
   */
- public void filterByStatus(MediaStatus status) {
-  for (Movie m : movies) {
-   if (m.getEntry().getStatus() == status) {
-    System.out.println(m.getMovieDetails());
+ public ArrayList<MediaEntry> filterByStatus(MediaStatus status) {
+  ArrayList<MediaEntry> result = new ArrayList<MediaEntry>();
+  for (MediaEntry e : ENTRIES) {
+   if (e.getStatus() == status) {
+    result.add(e);
    }
   }
-  for (TVSeries t : tvSeriesList) {
-   if (t.getEntry().getStatus() == status) {
-    System.out.println(t.getSeriesDetails());
-   }
-  }
-  for (VideoGame v : videoGames) {
-   if (v.getEntry().getStatus() == status) {
-    System.out.println(v.getGameDetails());
-   }
-  }
+  return result;
  }
 
  /**
-  * Prints the details of every entry belonging to the given media
-  * type. The media type is matched case-insensitively against
-  * "Movie", "TVSeries", or "VideoGame".
+  * Builds a list of every entry belonging to the given media type.
+  * The media type is matched case-insensitively against "Movie",
+  * "TVSeries", or "VideoGame".
   * <p>
-  * <b>Postcondition:</b> prints all media of the type passed into function
+  * <b>Precondition:</b> type is not null <br>
+  * <b>Postcondition:</b> the library contents are unchanged
   * </p>
-  * @param mediaType the type of media to filter by ("Movie",
-  *                  "TVSeries", or "VideoGame")
-  * 
+  * @param type the type of media to filter by ("Movie", "TVSeries",
+  *             or "VideoGame")
+  * @return a list of entries matching the given media type
+  *
   */
- public void filterByType(String mediaType) {
-  if (mediaType.equalsIgnoreCase("Movie")) {
-   for (Movie m : movies) {
-    System.out.println(m.getMovieDetails());
-   }
-  } else if (mediaType.equalsIgnoreCase("TVSeries")) {
-   for (TVSeries t : tvSeriesList) {
-    System.out.println(t.getSeriesDetails());
-   }
-  } else if (mediaType.equalsIgnoreCase("VideoGame")) {
-   for (VideoGame g : videoGames) {
-    System.out.println(g.getGameDetails());
+ public ArrayList<MediaEntry> filterByType(String type) {
+  ArrayList<MediaEntry> result = new ArrayList<MediaEntry>();
+  for (MediaEntry e : ENTRIES) {
+   if (e.getMediaType().equalsIgnoreCase(type)) {
+    result.add(e);
    }
   }
+  return result;
+ }
+
+ /**
+  * Builds a list of every entry whose title or genre contains the
+  * given keyword, ignoring case.
+  * <p>
+  * <b>Precondition:</b> keyword is not null <br>
+  * <b>Postcondition:</b> the library contents are unchanged
+  * </p>
+  * @param keyword the keyword to search for in titles and genres
+  * @return a list of entries matching the keyword
+  *
+  */
+ public ArrayList<MediaEntry> searchEntries(String keyword) {
+  ArrayList<MediaEntry> result = new ArrayList<MediaEntry>();
+  for (MediaEntry e : ENTRIES) {
+   if (e.getTitle().toLowerCase().contains(keyword.toLowerCase())
+           || e.getGenre().toLowerCase().contains(keyword.toLowerCase())) {
+    result.add(e);
+   }
+  }
+  return result;
+ }
+
+ /**
+  * Returns the complete list of entries in the library.
+  *
+  * @return the list of all MediaEntry objects
+  *
+  */
+ public ArrayList<MediaEntry> getAllEntries() {
+  return this.ENTRIES;
  }
 
  /**
@@ -231,34 +155,31 @@ public class Library {
   * in the library, the count of each media type, and the average
   * rating across all Completed entries that have been rated.
   * <p>
-  * <b>Postcondition:</b> prints the number of movies, series and games; their average ratings
+  * <b>Postcondition:</b> the library contents are unchanged
   * </p>
   * @return a String summarizing total entries, movie/TV/game counts,
   *         and the average rating of completed entries
-  * 
+  *
   */
  public String getSummary() {
-  int total = movies.size() + tvSeriesList.size() + videoGames.size();
-
+  int total = ENTRIES.size();
+  int movieCount = 0;
+  int seriesCount = 0;
+  int gameCount = 0;
   int ratingSum = 0;
   int ratedCount = 0;
 
-  for (Movie m : movies) {
-   Integer r = m.getEntry().getRating();
-   if (r != null) {
-    ratingSum += r;
-    ratedCount++;
+  for (MediaEntry e : ENTRIES) {
+   String type = e.getMediaType();
+   if (type.equals("Movie")) {
+    movieCount++;
+   } else if (type.equals("TVSeries")) {
+    seriesCount++;
+   } else if (type.equals("VideoGame")) {
+    gameCount++;
    }
-  }
-  for (TVSeries t : tvSeriesList) {
-   Integer r = t.getEntry().getRating();
-   if (r != null) {
-    ratingSum += r;
-    ratedCount++;
-   }
-  }
-  for (VideoGame v : videoGames) {
-   Integer r = v.getEntry().getRating();
+
+   Integer r = e.getRating();
    if (r != null) {
     ratingSum += r;
     ratedCount++;
@@ -274,11 +195,9 @@ public class Library {
   }
 
   return "Total entries: " + total
-          + " | Movies: " + movies.size()
-          + " | TV Series: " + tvSeriesList.size()
-          + " | Video Games: " + videoGames.size()
+          + " | Movies: " + movieCount
+          + " | TV Series: " + seriesCount
+          + " | Video Games: " + gameCount
           + " | Average rating (completed): " + avgRatingText;
  }
 }
-
-
