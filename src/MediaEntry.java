@@ -2,10 +2,20 @@
  * Represents the data shared by every media type in MediaVault:
  * title, genre, status, and an optional rating/review pair that may
  * only be set once the entry is marked COMPLETED.
- *
- * @author Tobias Raian M. Edep
+ * <p>
+ * This class is abstract and cannot be instantiated on its own. Each
+ * concrete subclass supplies its own media type label, formatted detail
+ * string, and progress description. This lets the rest of the program hold
+ * and operate on every kind of media through this single common type.
+ * </p>
  */
 public abstract class MediaEntry {
+
+    /** The lowest rating that may be assigned to a completed entry. */
+    public static final int MIN_RATING = 1;
+
+    /** The highest rating that may be assigned to a completed entry. */
+    public static final int MAX_RATING = 10;
 
     protected final String TITLE;
     protected final String GENRE;
@@ -15,14 +25,18 @@ public abstract class MediaEntry {
 
     /**
      * Constructs a new MediaEntry with the given title and genre.
-     * The entry starts with no rating or review, since both may
+     * The entry starts with no rating and no review, since both may
      * only be set once the entry is COMPLETED.
+     * <p>
+     * <b>Precondition:</b> title, genre, and status are not null <br>
+     * <b>Postcondition:</b> the entry is created with a null rating and review
+     * </p>
      *
      * @param title  the title of the media item
      * @param genre  the genre of the media item
-     * @param status the initial status (PLANNED or IN_PROGRESS)
+     * @param status the initial status of the media item
      */
-    public MediaEntry(String title, String genre, MediaStatus status){
+    public MediaEntry(String title, String genre, MediaStatus status) {
         this.TITLE = title;
         this.GENRE = genre;
         this.status = status;
@@ -32,46 +46,52 @@ public abstract class MediaEntry {
 
     /**
      * Updates the status of this entry.
+     * <p>
+     * <b>Precondition:</b> newStatus is not null <br>
+     * <b>Postcondition:</b> the status attribute reflects newStatus
+     * </p>
      *
      * @param newStatus the new status to apply
      */
-    public void updateStatus(MediaStatus newStatus){
-
+    public void updateStatus(MediaStatus newStatus) {
         this.status = newStatus;
     }
 
     /**
-     * Attempts to set a rating and review for this entry. This will
-     * only succeed if the entry's status is COMPLETED, enforcing the
-     * rule that ratings may only be attached to completed media.
+     * Attempts to set a rating and review for this entry. This succeeds only
+     * when the entry's status is COMPLETED and the rating falls within the
+     * valid range, enforcing the rule that ratings may only be attached to
+     * finished media.
      * <p>
-     * <b>Precondition:</b> rating is an integer from 1 to 10 <br>
-     * <b>Postcondition:</b> rating and review attributes are set <br>
+     * <b>Precondition:</b> review is not null <br>
+     * <b>Postcondition:</b> the rating and review attributes are set only if
+     * the entry is COMPLETED and the rating is valid; otherwise the entry is
+     * left unchanged
      * </p>
-     * @param rating the rating to assign (e.g. 1-10)
-     * @param review a short review/comment
-     * @return true if the rating and review were set, false if the
-     *         entry's status is not COMPLETED
+     *
+     * @param rating the rating to assign, from MIN_RATING to MAX_RATING
+     * @param review a short review or comment on the entry
+     * @return true if the rating and review were set, false if the entry is
+     *         not COMPLETED or the rating is out of range
      */
     public boolean setRatingAndReview(int rating, String review) {
         boolean ratingSet = false;
-        if (!isCompleted())
-            System.out.println("Cannot rate: entry is not completed.");
-        else {
+
+        if (isCompleted() && rating >= MIN_RATING && rating <= MAX_RATING) {
             this.rating = rating;
             this.review = review;
             ratingSet = true;
         }
-        return ratingSet;   
+
+        return ratingSet;
     }
 
     /**
      * Checks whether this entry's status is COMPLETED.
      *
-     * @return true if status is COMPLETED, false otherwise
+     * @return true if the status is COMPLETED, false otherwise
      */
-    public boolean isCompleted(){
-
+    public boolean isCompleted() {
         return this.status == MediaStatus.COMPLETED;
     }
 
@@ -80,30 +100,8 @@ public abstract class MediaEntry {
      *
      * @return the title
      */
-    public String getTitle(){
-
+    public String getTitle() {
         return this.TITLE;
-    }
-
-    /**
-     * Returns the current status of this entry.
-     *
-     * @return the MediaStatus
-     */
-    public MediaStatus getStatus() {
-
-        return this.status;
-    }
-    
-    /**
-     * Returns the rating of this entry, or null if it has not been
-     * rated yet.
-     *
-     * @return the rating as an Integer, or null if unrated
-     */
-    public Integer getRating() {
-
-        return this.rating;
     }
 
     /**
@@ -112,20 +110,57 @@ public abstract class MediaEntry {
      * @return the genre
      */
     public String getGenre() {
-
         return this.GENRE;
     }
 
     /**
-     * Returns the review of this entry.
+     * Returns the current status of this entry.
      *
-     * @return the review
+     * @return the MediaStatus of this entry
+     */
+    public MediaStatus getStatus() {
+        return this.status;
+    }
+
+    /**
+     * Returns the rating of this entry, or null if it has not been rated yet.
+     *
+     * @return the rating as an Integer, or null when unrated
+     */
+    public Integer getRating() {
+        return this.rating;
+    }
+
+    /**
+     * Returns the review of this entry, or null if it has not been reviewed.
+     *
+     * @return the review text, or null when unreviewed
      */
     public String getReview() {
         return this.review;
     }
 
+    /**
+     * Returns the label identifying which kind of media this entry is.
+     * Each subclass returns its own fixed label.
+     *
+     * @return the media type label of this entry
+     */
     public abstract String getMediaType();
 
+    /**
+     * Builds a complete, human-readable description of this entry including
+     * every attribute specific to its media type.
+     *
+     * @return a formatted multi-line description of this entry
+     */
     public abstract String getDetails();
+
+    /**
+     * Builds a short description of how far along this entry is, phrased in
+     * terms that suit its media type.
+     *
+     * @return a one-line progress description for this entry
+     */
+    public abstract String getProgressDescription();
 }

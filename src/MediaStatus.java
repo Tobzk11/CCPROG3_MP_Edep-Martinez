@@ -1,20 +1,20 @@
 /**
- * Displays the status of the media type based on completion.
- * 
- * @author Tobias Raian M. Edep
+ * Represents the three possible progress states a media entry may occupy
+ * in a MediaVault library.
+ * <p>
+ * Using an enumeration instead of integer flags or free-form Strings makes
+ * the set of valid states closed and checked at compile time, which removes
+ * any possibility of an entry holding a meaningless status value.
+ * </p>
  */
-
 public enum MediaStatus {
-    /**
-     * Planning to watch/play, still considered as incomplete.
-     */
+
+    /** The entry has been added to the library but not started. */
     PLANNED,
-    /**
-     * Currently watching/playing, still considered as incomplete.
-     */
+
+    /** The entry is currently being watched or played. */
     IN_PROGRESS,
-    /**
-     * Already watched/played. Marked as complete.
-     */
+
+    /** The entry has been finished and may now be rated and reviewed. */
     COMPLETED
 }
