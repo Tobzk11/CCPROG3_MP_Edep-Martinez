@@ -1,39 +1,57 @@
 /**
- * Serves as the object class for user profiles. Contains attributes such as the username and the library
- * of media. The class also contains methods that returns the library of the user, as well as a summary of
- * the user's library. 
- * 
- * @author Simon Jaxith T. Martinez
+ * Represents a single MediaVault user, pairing a username with the media
+ * library that belongs to them. The library is created inside the constructor
+ * and is never handed in from outside, so a library cannot outlive the profile
+ * that owns it.
  */
 public class UserProfile {
+
     private final String USERNAME;
     private final Library LIBRARY;
 
     /**
-     * Constructs a UserProfile with username passed into parameter and an empty library. 
-     * 
-     * @param username the username of the UserProfile instance.
+     * Constructs a UserProfile with the given username and a new empty library.
+     * <p>
+     * <b>Precondition:</b> username is not null <br>
+     * <b>Postcondition:</b> the profile owns a newly created empty Library
+     * </p>
+     *
+     * @param username the username of this profile
      */
     public UserProfile(String username) {
         this.USERNAME = username;
-        LIBRARY = new Library();
+        this.LIBRARY = new Library();
     }
 
     /**
-     * Returns the media library of the user.
-     * 
-     * @return the library of the user
+     * Returns the username of this profile.
+     *
+     * @return the username
+     */
+    public String getUsername() {
+        return this.USERNAME;
+    }
+
+    /**
+     * Returns the media library owned by this profile.
+     *
+     * @return the Library of this user
      */
     public Library getLibrary() {
         return this.LIBRARY;
     }
 
     /**
-     * Prints a summary of the user's library. 
-     * 
+     * Builds a greeting for this user followed by a summary of their library.
+     * The text is returned rather than printed so that the View decides how
+     * and where it is displayed.
+     * <p>
+     * <b>Postcondition:</b> the profile and its library are unchanged
+     * </p>
+     *
+     * @return a String containing the greeting and the library summary
      */
-    public void viewSummary() {
-        System.out.printf("Hello, %s!\n", this.USERNAME);
-        System.out.println(this.LIBRARY.getSummary());
+    public String viewSummary() {
+        return "Hello, " + this.USERNAME + "!\n" + this.LIBRARY.getSummary();
     }
 }
