@@ -4,12 +4,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.scene.*;
 
@@ -24,8 +21,9 @@ public class MediaVaultView extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Group root = new Group();
-        Scene scene = new Scene(root, 500, 500, Color.BLACK);
+        Group login = new Group();
+        Group menu = new Group();
+        Scene scene = new Scene(login, 500, 500, Color.BLACK);
 
         Image icon = new Image("icon.jpg"); // images
         Image bgImage = new Image("main.png");
@@ -38,9 +36,11 @@ public class MediaVaultView extends Application {
         primaryStage.setTitle("MediaVault");
         primaryStage.setResizable(false);
 
-        Font custom = Font.loadFont(getClass().getResourceAsStream("ByteBounce.ttf"), 75); // title
+        Font custom = Font.loadFont(getClass().getResourceAsStream("ByteBounce.ttf"), 75); // font
         fontFam = custom.getFamily();
-        Text title = new Text();
+
+        // Login
+        Text title = new Text(); // title
         title.setText("MediaVault");
         title.setX(110);
         title.setY(200);
@@ -63,17 +63,31 @@ public class MediaVaultView extends Application {
         warning.setFont(Font.font(fontFam, 13));
         warning.setTextFill(Color.RED);
 
+        login.getChildren().addAll(bgImg, title, user, enter, warning);
+        // Login
+
+        // Main menu
+        Text mm = new Text(); // title
+        mm.setText("Main Menu");
+        mm.setX(110);
+        mm.setY(150);
+        mm.setFont(custom);
+        mm.setFill(Color.WHITE);
+
+        menu.getChildren().addAll(mm);
+
+
         enter.setOnAction(event ->
         {String input = user.getText();
         if (input.trim().isEmpty())
             warning.setText("Please enter a valid username");
         else {
             username = input;
-            // next stage
+            scene.setRoot(menu);
         }
         });
 
-        root.getChildren().addAll(bgImg, title, user, enter, warning);
+
         primaryStage.setScene(scene);
         primaryStage.show();  // must be last line
     }

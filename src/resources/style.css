@@ -1,0 +1,19 @@
+.main-bg {
+    -fx-background-image: url("main.png");
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+}
+@font-face {
+    font-family: "custom";
+    src: url("ByteBounce.ttf");
+}
+.title-label {
+    -fx-font-family: "custom";
+    -fx-font-size: 25;
+    -fx-textfill: #ffffff;
+}
+.enter-button {
+    -fx-background-color: #0be433;
+    -fx-txtfill: #ffffff;
+}
