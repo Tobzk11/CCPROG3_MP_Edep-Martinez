@@ -1,12 +1,12 @@
 .main-bg {
-    -fx-background-image: url("main.png");
+    -fx-background-image: url("resources/main.png");
     -fx-background-size: cover;
     -fx-background-position: center center;
     -fx-background-repeat: no-repeat;
 }
 @font-face {
     font-family: "custom";
-    src: url("ByteBounce.ttf");
+    src: url("resources/ByteBounce.ttf");
 }
 .title-label {
     -fx-font-family: "custom";
