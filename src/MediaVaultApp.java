@@ -1,15 +1,26 @@
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class MediaVaultApp extends Application {
+
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("MediaVaultView.fxml"));
+    public void start(Stage primaryStage) {
+        // 1. Model Instantiation
+        Library library = new Library();
+        FileManager fileManager = new FileManager("library_data.txt");
+
+        // 2. View Instantiation
+        MediaVaultView view = new MediaVaultView();
+
+        // 3. Controller Wiring
+        MediaVaultController controller = new MediaVaultController(library, view, fileManager);
+        controller.initController();
+
+        // 4. Stage Setup
+        Scene scene = new Scene(view.getRoot(), 1000, 650);
         primaryStage.setTitle("MediaVault");
-        primaryStage.setScene(new Scene(root));
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 
@@ -17,9 +28,3 @@ public class MediaVaultApp extends Application {
         launch(args);
     }
 }
-/**
- * Entry point of the MediaVault program. Its only job is to hand control to
- * the JavaFX runtime, which then constructs MediaVaultView and calls its
- * start method. The view is responsible for creating the Library, the
- * FileManager, and the MediaVaultController that ties them together.
- */

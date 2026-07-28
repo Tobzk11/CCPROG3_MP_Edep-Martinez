@@ -49,6 +49,7 @@ public class MediaVaultController {
      * </p>
      */
     public void initController() {
+        this.VIEW.setEnterHandler(e -> handleLogin());
         this.VIEW.setAddEntryHandler(e -> handleAddEntry());
         this.VIEW.setRemoveEntryHandler(e -> handleRemoveEntry());
         this.VIEW.setUpdateStatusHandler(e -> handleUpdateStatus());
@@ -59,6 +60,17 @@ public class MediaVaultController {
         this.VIEW.setLoadHandler(e -> handleLoad());
 
         refreshView();
+    }
+
+    public void handleLogin() {
+        String username = this.VIEW.getLoginUsername().trim();
+        if (username.isEmpty()) {
+            this.VIEW.setLoginStatus("Please enter a username.");
+        } else {
+            // Transition to main app view
+            this.VIEW.switchToMainApp();
+            this.VIEW.showMessage("Welcome, " + username + "!");
+        }
     }
 
     /**
