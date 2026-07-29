@@ -57,7 +57,7 @@ public class MediaVaultController {
         this.VIEW.setFilterHandler(e -> handleFilter());
         this.VIEW.setSearchHandler(e -> handleSearch());
         this.VIEW.setSaveHandler(e -> handleSave());
-        this.VIEW.setLoadHandler(e -> handleLoad());
+        // this.VIEW.setLoadHandler(e -> handleLoad());
 
         refreshView();
     }
@@ -304,6 +304,7 @@ public class MediaVaultController {
         }
 
         this.VIEW.showMessage(message);
+        this.VIEW.switchToLogin();
     }
 
     /**
@@ -366,7 +367,7 @@ public class MediaVaultController {
      *
      * @param title the title of the entry whose details should be shown
      */
-    public void showDetailsFor(String title) {
+    /* public void showDetailsFor(String title) {
         MediaEntry entry = this.LIBRARY.findEntry(safeTrim(title));
 
         if (entry == null) {
@@ -374,7 +375,7 @@ public class MediaVaultController {
         } else {
             this.VIEW.showEntryDetails(entry.getDetails());
         }
-    }
+    } */
 
     /**
      * Converts a list of MediaEntry objects into the one-line summary Strings

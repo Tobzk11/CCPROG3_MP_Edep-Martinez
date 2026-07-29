@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
@@ -64,20 +65,18 @@ public class MediaVaultView {
     private final Button filterButton;
     private final Button searchButton;
     private final Button saveButton;
-    private final Button loadButton;
+    // private final Button loadButton;
 
     // --- Displays ---
     private final ListView<String> entryListView;
-    private final TextArea detailsArea;
+    // private final TextArea detailsArea;
     private final Label messageLabel;
     private final Label statisticsLabel;
 
     public MediaVaultView() {
         rootStack = new StackPane();
 
-        // ===================================================================
-        // 1. LOGIN UI (Based on your initial layout)
-        // ===================================================================
+        // login
         loginPane = new VBox(15.0);
         loginPane.setAlignment(Pos.CENTER);
         loginPane.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
@@ -103,15 +102,15 @@ public class MediaVaultView {
         // ===================================================================
         mainPane = new BorderPane();
         mainPane.setPadding(new Insets(10));
-        mainPane.setVisible(false); // Initially hidden until user logs in
+        mainPane.setVisible(false);
 
         // Top Toolbar
         HBox topBar = new HBox(10);
-        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setAlignment(Pos.CENTER);
         topBar.setPadding(new Insets(0, 0, 10, 0));
 
-        saveButton = new Button("Save");
-        loadButton = new Button("Load");
+        saveButton = new Button("Save and Exit");
+        // loadButton = new Button("Load");
         searchField = new TextField();
         searchField.setPromptText("Search keyword...");
         searchButton = new Button("Search");
@@ -127,7 +126,8 @@ public class MediaVaultView {
         filterButton = new Button("Filter");
 
         topBar.getChildren().addAll(
-                saveButton, loadButton, new Separator(),
+                saveButton, // loadButton,
+                new Separator(),
                 searchField, searchButton, new Separator(),
                 new Label("Type:"), filterTypeComboBox,
                 new Label("Status:"), filterStatusComboBox,
@@ -137,13 +137,13 @@ public class MediaVaultView {
 
         // Center Lists
         entryListView = new ListView<>();
-        detailsArea = new TextArea();
+        /* detailsArea = new TextArea();
         detailsArea.setEditable(false);
         detailsArea.setPromptText("Select an entry to view details...");
 
         SplitPane centerSplit = new SplitPane(entryListView, detailsArea);
-        centerSplit.setDividerPositions(0.6);
-        mainPane.setCenter(centerSplit);
+        centerSplit.setDividerPositions(0.6); */
+        mainPane.setCenter(entryListView);
 
         // Left Form
         VBox formBox = new VBox(8);
@@ -153,52 +153,103 @@ public class MediaVaultView {
         Label formTitle = new Label("Entry Management");
         formTitle.setFont(Font.font("System", FontWeight.BOLD, 14));
 
+        VBox movieBox = new VBox(8);
+        movieBox.setPadding(new Insets(0, 10, 0, 0));
+        movieBox.setPrefWidth(260);
+        Label movieFields = new Label("Movie");
+        movieFields.setFont(Font.font("System", FontWeight.BOLD, 10));
+        directorField = new TextField();
+        directorField.setPromptText("Director");
+        durationField = new TextField();
+        durationField.setPromptText("Duration (minutes)");
+        releaseYearField = new TextField();
+        releaseYearField.setPromptText("Release Year");
+        movieBox.getChildren().addAll(movieFields, directorField, durationField, releaseYearField);
+        setSectionVisible(movieBox, false);
+
+        VBox tvBox = new VBox(8);
+        tvBox.setPadding(new Insets(0, 10, 0, 0));
+        tvBox.setPrefWidth(260);
+        Label tvFields = new Label("TV Series");
+        tvFields.setFont(Font.font("System", FontWeight.BOLD, 10));
+        totalEpisodesField = new TextField();
+        totalEpisodesField.setPromptText("Total Episodes");
+        watchedEpisodesField = new TextField();
+        watchedEpisodesField.setPromptText("Watched Episodes");
+        seasonCountField = new TextField();
+        seasonCountField.setPromptText("Seasons");
+        tvBox.getChildren().addAll(tvFields, totalEpisodesField, watchedEpisodesField, seasonCountField);
+        setSectionVisible(tvBox, false);
+
+        VBox gameBox = new VBox(8);
+        gameBox.setPadding(new Insets(0, 10, 0, 0));
+        gameBox.setPrefWidth(260);
+        Label gameFields = new Label("Video Game");
+        gameFields.setFont(Font.font("System", FontWeight.BOLD, 10));
+        platformField = new TextField();
+        platformField.setPromptText("Platform");
+        requiredSpecsField = new TextField();
+        requiredSpecsField.setPromptText("Required Specs");
+        developerField = new TextField();
+        developerField.setPromptText("Developer");
+        hoursPlayedField = new TextField();
+        hoursPlayedField.setPromptText("Hours Played");
+        gameBox.getChildren().addAll(gameFields, platformField, requiredSpecsField, developerField, hoursPlayedField);
+        setSectionVisible(gameBox, false);
+
         typeComboBox = new ComboBox<>();
         typeComboBox.getItems().addAll("Movie", "TV Series", "Video Game");
         typeComboBox.setPromptText("Select Type");
+        typeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+            setSectionVisible(movieBox, "Movie".equals(newVal));
+            setSectionVisible(tvBox, "TV Series".equals(newVal));
+            setSectionVisible(gameBox, "Video Game".equals(newVal));
+        });
 
-        titleField = new TextField(); titleField.setPromptText("Title");
-        genreField = new TextField(); genreField.setPromptText("Genre");
+        VBox entryBox = new VBox();
+        entryBox.setPadding(new Insets(0, 0, 0, 0));
+        entryBox.setPrefWidth(260);
+        entryBox.getChildren().addAll(typeComboBox, movieBox, tvBox, gameBox);
+
+        titleField = new TextField();
+        titleField.setPromptText("Title");
+        genreField = new TextField();
+        genreField.setPromptText("Genre");
 
         statusComboBox = new ComboBox<>();
         statusComboBox.getItems().addAll("Planned", "In Progress", "Completed");
         statusComboBox.setPromptText("Select Status");
 
-        // Media fields
-        directorField = new TextField(); directorField.setPromptText("Director (Movie)");
-        durationField = new TextField(); durationField.setPromptText("Duration mins (Movie)");
-        releaseYearField = new TextField(); releaseYearField.setPromptText("Release Year (Movie)");
-
-        totalEpisodesField = new TextField(); totalEpisodesField.setPromptText("Total Episodes (TV)");
-        watchedEpisodesField = new TextField(); watchedEpisodesField.setPromptText("Watched Episodes (TV)");
-        seasonCountField = new TextField(); seasonCountField.setPromptText("Seasons (TV)");
-
-        platformField = new TextField(); platformField.setPromptText("Platform (Game)");
-        requiredSpecsField = new TextField(); requiredSpecsField.setPromptText("Required Specs (Game)");
-        developerField = new TextField(); developerField.setPromptText("Developer (Game)");
-        hoursPlayedField = new TextField(); hoursPlayedField.setPromptText("Hours Played (Game)");
-
         addButton = new Button("Add Entry");
         removeButton = new Button("Remove Selected");
         updateStatusButton = new Button("Update Status");
 
-        ratingField = new TextField(); ratingField.setPromptText("Rating (1-10)");
-        reviewField = new TextArea(); reviewField.setPromptText("Review..."); reviewField.setPrefRowCount(3);
-        rateButton = new Button("Rate & Review");
-
         formBox.getChildren().addAll(
-                formTitle, typeComboBox, titleField, genreField, statusComboBox,
-                directorField, durationField, releaseYearField,
-                totalEpisodesField, watchedEpisodesField, seasonCountField,
-                platformField, requiredSpecsField, developerField, hoursPlayedField,
-                addButton, removeButton, updateStatusButton,
-                new Separator(),
-                ratingField, reviewField, rateButton
+                formTitle, titleField, genreField, statusComboBox, new Separator(), entryBox,
+                addButton, removeButton, updateStatusButton
         );
 
         ScrollPane formScroll = new ScrollPane(formBox);
         formScroll.setFitToWidth(true);
         mainPane.setLeft(formScroll);
+
+        VBox rateBox = new VBox();
+        rateBox.setPadding(new Insets(10, 10, 10, 10));
+        rateBox.setPrefWidth(260);
+        rateBox.setSpacing(20);
+        Label ratingLabel = new Label("Rating (1 - 10)");
+        ratingLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
+        mainPane.setLeft(formScroll);
+        ratingField = new TextField();
+        Label reviewLabel = new Label("Review");
+        reviewLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
+        reviewField = new TextArea();
+        reviewField.setPrefRowCount(3);
+        rateButton = new Button("Rate & Review");
+
+        rateBox.getChildren().addAll(ratingLabel, ratingField, reviewLabel, reviewField, rateButton);
+
+        mainPane.setRight(rateBox);
 
         // Bottom Status
         VBox bottomBox = new VBox(5);
@@ -212,6 +263,11 @@ public class MediaVaultView {
 
         // Add both views to stack root
         rootStack.getChildren().addAll(loginPane, mainPane);
+    }
+
+    private void setSectionVisible(Node node, boolean visible) {
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 
     public StackPane getRoot() {
@@ -231,6 +287,11 @@ public class MediaVaultView {
         loginStatusLabel.setText(text);
     }
 
+    public void switchToLogin() {
+        loginPane.setVisible(true);
+        mainPane.setVisible(false);
+    }
+
     public void switchToMainApp() {
         loginPane.setVisible(false);
         mainPane.setVisible(true);
@@ -244,7 +305,7 @@ public class MediaVaultView {
     public void setFilterHandler(EventHandler<ActionEvent> handler) { filterButton.setOnAction(handler); }
     public void setSearchHandler(EventHandler<ActionEvent> handler) { searchButton.setOnAction(handler); }
     public void setSaveHandler(EventHandler<ActionEvent> handler) { saveButton.setOnAction(handler); }
-    public void setLoadHandler(EventHandler<ActionEvent> handler) { loadButton.setOnAction(handler); }
+    // public void setLoadHandler(EventHandler<ActionEvent> handler) { loadButton.setOnAction(handler); }
 
     // --- Getters ---
     public String getSelectedType() { return typeComboBox.getValue(); }
@@ -284,7 +345,7 @@ public class MediaVaultView {
     }
 
     public void displayEntries(ArrayList<String> entries) { entryListView.getItems().setAll(entries); }
-    public void showEntryDetails(String details) { detailsArea.setText(details); }
+    // public void showEntryDetails(String details) { detailsArea.setText(details); }
     public void showMessage(String message) { messageLabel.setText(message); }
     public void showStatistics(String summary) { statisticsLabel.setText(summary); }
 
