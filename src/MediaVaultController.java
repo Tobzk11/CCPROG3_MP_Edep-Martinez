@@ -49,7 +49,10 @@ public class MediaVaultController {
      * </p>
      */
     public void initController() {
-        this.VIEW.setEnterHandler(e -> handleLogin());
+        this.VIEW.setLoginHandler(e -> handleLogin());
+        this.VIEW.setSignupHandler(e -> handleSignup());
+        this.VIEW.swapLoginSignup(e -> handleSwapFront());
+        this.VIEW.swapSignupLogin(e -> handleSwapFront());
         this.VIEW.setAddEntryHandler(e -> handleAddEntry());
         this.VIEW.setRemoveEntryHandler(e -> handleRemoveEntry());
         this.VIEW.setUpdateStatusHandler(e -> handleUpdateStatus());
@@ -63,16 +66,35 @@ public class MediaVaultController {
     }
 
     public void handleLogin() {
+        // u can put try and catch dito if needed
         String username = this.VIEW.getLoginUsername().trim();
+
+        this.VIEW.setSignupStatus("Username does not exist"); // use this if di nahanap ung username
+
+        this.VIEW.mainPage(); // basically this shows ung main page
+        this.VIEW.showMessage("Welcome, " + username + "!"); // kasama din ito
+    }
+
+    public void handleSignup() {
+        String username = this.VIEW.getSignupUsername().trim();
         if (username.isEmpty()) {
             this.VIEW.setLoginStatus("Please enter a username.");
         } else {
             // Transition to main app view
-            this.VIEW.switchToMainApp();
+            this.VIEW.mainPage();
             this.VIEW.showMessage("Welcome, " + username + "!");
         }
     }
 
+    public void handleSwapFront() {
+        boolean visibleLogin = this.VIEW.loginPane.isVisible();
+
+        this.VIEW.loginPane.setVisible(!visibleLogin);
+        this.VIEW.loginPane.setManaged(!visibleLogin);
+
+        this.VIEW.signupPane.setVisible(visibleLogin);
+        this.VIEW.signupPane.setManaged(visibleLogin);
+    }
     /**
      * Reads the entry fields from the view, validates them, and adds a new
      * entry of the selected media type to the library. Duplicate titles, blank
@@ -304,7 +326,7 @@ public class MediaVaultController {
         }
 
         this.VIEW.showMessage(message);
-        this.VIEW.switchToLogin();
+        this.VIEW.loginPage();
     }
 
     /**
@@ -457,7 +479,7 @@ public class MediaVaultController {
                 } else {
                     entry = new Movie(title, genre, status, director, duration, year);
                 }
-            } else if (type.equalsIgnoreCase("TVSeries")) {
+            } else if (type.equalsIgnoreCase("TV Series")) {
                 int totalEps = Integer.parseInt(safeTrim(this.VIEW.getTotalEpisodesInput()));
                 int watchedEps = Integer.parseInt(safeTrim(this.VIEW.getWatchedEpisodesInput()));
                 int seasons = Integer.parseInt(safeTrim(this.VIEW.getSeasonCountInput()));
@@ -472,7 +494,7 @@ public class MediaVaultController {
                 } else {
                     entry = new TVSeries(title, genre, status, totalEps, watchedEps, seasons);
                 }
-            } else if (type.equalsIgnoreCase("VideoGame")) {
+            } else if (type.equalsIgnoreCase("Video Game")) {
                 String platform = safeTrim(this.VIEW.getPlatformInput());
                 String specs = safeTrim(this.VIEW.getRequiredSpecsInput());
                 String developer = safeTrim(this.VIEW.getDeveloperInput());

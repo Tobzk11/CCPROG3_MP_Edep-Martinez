@@ -22,10 +22,19 @@ public class MediaVaultView {
     private final StackPane rootStack; // Container to hold both Login and Main UI
 
     // --- Login Controls ---
-    private final VBox loginPane;
+    public final VBox loginPane;
     private final TextField loginUsernameField;
     private final Button enterButton;
+    private final Label signupLabel;
+    private final Button signupButton;
     private final Label loginStatusLabel;
+
+    public final VBox signupPane;
+    private final TextField signupUsernameField;
+    private final Button signupEnterButton;
+    private final Label loginLabel;
+    private final Button loginButton;
+    private final Label signupStatusLabel;
 
     // --- Main App Layout ---
     private final BorderPane mainPane;
@@ -82,7 +91,7 @@ public class MediaVaultView {
         loginPane.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
         loginPane.setMaxSize(300, 250);
 
-        Label titleLabel = new Label("MediaVault");
+        Label titleLabel = new Label("MediaVault Login");
         titleLabel.setFont(new Font(20.0));
 
         loginUsernameField = new TextField();
@@ -93,13 +102,42 @@ public class MediaVaultView {
         enterButton = new Button("Enter");
         enterButton.setMnemonicParsing(false);
 
+        signupLabel = new Label("Click here to make a new account: ");
+
+        signupButton = new Button("Sign up");
+
         loginStatusLabel = new Label();
 
-        loginPane.getChildren().addAll(titleLabel, loginUsernameField, enterButton, loginStatusLabel);
+        loginPane.getChildren().addAll(titleLabel, loginUsernameField, enterButton, loginStatusLabel, signupLabel, signupButton);
 
-        // ===================================================================
-        // 2. MAIN APP UI
-        // ===================================================================
+        // sign up
+        signupPane = new VBox(15.0);
+        signupPane.setAlignment(Pos.CENTER);
+        signupPane.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
+        signupPane.setMaxSize(300, 250);
+        signupPane.setVisible(false);
+        signupPane.setManaged(false);
+
+        Label signupTitleLabel = new Label("MediaVault Sign Up");
+        signupTitleLabel.setFont(new Font(20.0));
+
+        signupUsernameField = new TextField();
+        signupUsernameField.setMaxWidth(150.0);
+        signupUsernameField.setPrefHeight(25.0);
+        signupUsernameField.setPromptText("Username");
+
+        signupEnterButton = new Button("Enter");
+        signupEnterButton.setMnemonicParsing(false);
+
+        loginLabel = new Label("Click here if you have an existing account");
+
+        loginButton = new Button("Login");
+
+        signupStatusLabel = new Label();
+
+        signupPane.getChildren().addAll(signupTitleLabel, signupUsernameField, signupEnterButton, loginLabel, loginButton, signupStatusLabel);
+
+        // main
         mainPane = new BorderPane();
         mainPane.setPadding(new Insets(10));
         mainPane.setVisible(false);
@@ -262,7 +300,7 @@ public class MediaVaultView {
         mainPane.setBottom(bottomBox);
 
         // Add both views to stack root
-        rootStack.getChildren().addAll(loginPane, mainPane);
+        rootStack.getChildren().addAll(loginPane, signupPane, mainPane);
     }
 
     private void setSectionVisible(Node node, boolean visible) {
@@ -275,25 +313,43 @@ public class MediaVaultView {
     }
 
     // --- Login Handlers & Getters ---
-    public void setEnterHandler(EventHandler<ActionEvent> handler) {
+    public void setLoginHandler(EventHandler<ActionEvent> handler) {
         enterButton.setOnAction(handler);
     }
+
+    public void swapLoginSignup(EventHandler<ActionEvent> handler) { signupButton.setOnAction(handler); }
+
+    public void setSignupHandler(EventHandler<ActionEvent> handler) { signupEnterButton.setOnAction(handler); }
+
+    public void swapSignupLogin(EventHandler<ActionEvent> handler) { loginButton.setOnAction(handler); }
 
     public String getLoginUsername() {
         return loginUsernameField.getText();
     }
 
+    public String getSignupUsername() { return signupUsernameField.getText(); }
+
     public void setLoginStatus(String text) {
         loginStatusLabel.setText(text);
     }
 
-    public void switchToLogin() {
+    public void setSignupStatus(String text) { signupStatusLabel.setText(text); }
+
+    public void loginPage() {
         loginPane.setVisible(true);
+        signupPane.setVisible(false);
         mainPane.setVisible(false);
     }
 
-    public void switchToMainApp() {
+    public void signupPage() {
         loginPane.setVisible(false);
+        signupPane.setVisible(true);
+        mainPane.setVisible(false);
+    }
+
+    public void mainPage() {
+        loginPane.setVisible(false);
+        signupPane.setVisible(false);
         mainPane.setVisible(true);
     }
 
