@@ -1,8 +1,13 @@
 /**
  * Represents a single MediaVault user, pairing a username with the media
- * library that belongs to them. The library is created inside the constructor
- * and is never handed in from outside, so a library cannot outlive the profile
- * that owns it.
+ * library that belongs to them.
+ * <p>
+ * Two constructors are offered. The no-library constructor creates a fresh
+ * empty Library that the profile owns outright. The second constructor lets a
+ * profile be attached to a Library that already exists, which is what the
+ * controller uses when a user logs in and their saved entries have just been
+ * read back into the working library.
+ * </p>
  */
 public class UserProfile {
 
@@ -24,6 +29,23 @@ public class UserProfile {
     }
 
     /**
+     * Constructs a UserProfile for the given username around a Library that
+     * already exists. Used when a saved library has just been loaded from
+     * file and should now be associated with the user who owns it.
+     * <p>
+     * <b>Precondition:</b> username and library are not null <br>
+     * <b>Postcondition:</b> the profile refers to the given Library
+     * </p>
+     *
+     * @param username the username of this profile
+     * @param library  the Library this profile should be attached to
+     */
+    public UserProfile(String username, Library library) {
+        this.USERNAME = username;
+        this.LIBRARY = library;
+    }
+
+    /**
      * Returns the username of this profile.
      *
      * @return the username
@@ -33,7 +55,7 @@ public class UserProfile {
     }
 
     /**
-     * Returns the media library owned by this profile.
+     * Returns the media library belonging to this profile.
      *
      * @return the Library of this user
      */

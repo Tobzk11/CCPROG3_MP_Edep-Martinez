@@ -1,10 +1,3 @@
-/**
- * Entry point of the MediaVault program. Its only job is to hand control to
- * the JavaFX runtime, which then constructs MediaVaultView and calls its
- * start method. The view is responsible for creating the Library, the
- * FileManager, and the MediaVaultController that ties them together.
- */
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -16,20 +9,43 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
+/**
+ * The JavaFX view for MediaVault. This is the presentation layer of the MVC
+ * design: it owns every on-screen control and is the only class that imports
+ * JavaFX. It never touches Library, MediaEntry, Movie, TVSeries, VideoGame,
+ * FileManager, or MediaStatus directly. Everything it shows arrives as a
+ * String from the controller, and everything the user types leaves as a String
+ * through a getter.
+ * <p>
+ * The view holds three pages stacked on top of one another: a login page, a
+ * sign-up page, and the main library page. Only one is visible at a time, and
+ * the controller switches between them through loginPage, signupPage,
+ * mainPage, and swapFront.
+ * </p>
+ * <p>
+ * The view is not the JavaFX Application class. MediaVaultApp launches the
+ * program, builds this view, and asks it for its root node through getRoot.
+ * </p>
+ */
 public class MediaVaultView {
 
-    private final StackPane rootStack; // Container to hold both Login and Main UI
+    /** Separator used between the fields of a single list row. */
+    private static final String ROW_SEPARATOR = " - ";
+
+    private final StackPane rootStack; // Container to hold Login, Signup and Main UI
 
     // --- Login Controls ---
-    public final VBox loginPane;
+    private final VBox loginPane;
     private final TextField loginUsernameField;
     private final Button enterButton;
     private final Label signupLabel;
     private final Button signupButton;
     private final Label loginStatusLabel;
 
-    public final VBox signupPane;
+    // --- Signup Controls ---
+    private final VBox signupPane;
     private final TextField signupUsernameField;
     private final Button signupEnterButton;
     private final Label loginLabel;
@@ -74,18 +90,27 @@ public class MediaVaultView {
     private final Button filterButton;
     private final Button searchButton;
     private final Button saveButton;
-    // private final Button loadButton;
+    private final Button loadButton;
 
     // --- Displays ---
     private final ListView<String> entryListView;
-    // private final TextArea detailsArea;
+    private final TextArea detailsArea;
     private final Label messageLabel;
     private final Label statisticsLabel;
 
+    /**
+     * Builds every control the interface needs and arranges them into the
+     * three stacked pages. No handlers are attached here; the controller
+     * registers those afterwards through the setter methods.
+     * <p>
+     * <b>Postcondition:</b> all controls exist and the login page is the only
+     * visible page
+     * </p>
+     */
     public MediaVaultView() {
         rootStack = new StackPane();
 
-        // login
+        // ---------------- login page ----------------
         loginPane = new VBox(15.0);
         loginPane.setAlignment(Pos.CENTER);
         loginPane.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
@@ -108,15 +133,14 @@ public class MediaVaultView {
 
         loginStatusLabel = new Label();
 
-        loginPane.getChildren().addAll(titleLabel, loginUsernameField, enterButton, loginStatusLabel, signupLabel, signupButton);
+        loginPane.getChildren().addAll(titleLabel, loginUsernameField, enterButton,
+                loginStatusLabel, signupLabel, signupButton);
 
-        // sign up
+        // ---------------- sign up page ----------------
         signupPane = new VBox(15.0);
         signupPane.setAlignment(Pos.CENTER);
         signupPane.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
         signupPane.setMaxSize(300, 250);
-        signupPane.setVisible(false);
-        signupPane.setManaged(false);
 
         Label signupTitleLabel = new Label("MediaVault Sign Up");
         signupTitleLabel.setFont(new Font(20.0));
@@ -135,24 +159,26 @@ public class MediaVaultView {
 
         signupStatusLabel = new Label();
 
-        signupPane.getChildren().addAll(signupTitleLabel, signupUsernameField, signupEnterButton, loginLabel, loginButton, signupStatusLabel);
+        signupPane.getChildren().addAll(signupTitleLabel, signupUsernameField,
+                signupEnterButton, loginLabel, loginButton, signupStatusLabel);
 
-        // main
+        // ---------------- main page ----------------
         mainPane = new BorderPane();
         mainPane.setPadding(new Insets(10));
-        mainPane.setVisible(false);
 
         // Top Toolbar
         HBox topBar = new HBox(10);
         topBar.setAlignment(Pos.CENTER);
         topBar.setPadding(new Insets(0, 0, 10, 0));
 
-        saveButton = new Button("Save and Exit");
-        // loadButton = new Button("Load");
+        saveButton = new Button("Save and Log Out");
+        loadButton = new Button("Reload Saved");
         searchField = new TextField();
         searchField.setPromptText("Search keyword...");
         searchButton = new Button("Search");
 
+        // "None" is the do-not-narrow option. The controller treats any label
+        // that is not one of the three media types as "no type filter".
         filterTypeComboBox = new ComboBox<>();
         filterTypeComboBox.getItems().addAll("None", "Movie", "TV Series", "Video Game");
         filterTypeComboBox.setValue("None");
@@ -164,7 +190,7 @@ public class MediaVaultView {
         filterButton = new Button("Filter");
 
         topBar.getChildren().addAll(
-                saveButton, // loadButton,
+                saveButton, loadButton,
                 new Separator(),
                 searchField, searchButton, new Separator(),
                 new Label("Type:"), filterTypeComboBox,
@@ -173,15 +199,16 @@ public class MediaVaultView {
         );
         mainPane.setTop(topBar);
 
-        // Center Lists
+        // Center: the library list beside the details of the selected entry
         entryListView = new ListView<>();
-        /* detailsArea = new TextArea();
+        detailsArea = new TextArea();
         detailsArea.setEditable(false);
+        detailsArea.setWrapText(true);
         detailsArea.setPromptText("Select an entry to view details...");
 
         SplitPane centerSplit = new SplitPane(entryListView, detailsArea);
-        centerSplit.setDividerPositions(0.6); */
-        mainPane.setCenter(entryListView);
+        centerSplit.setDividerPositions(0.55);
+        mainPane.setCenter(centerSplit);
 
         // Left Form
         VBox formBox = new VBox(8);
@@ -232,7 +259,8 @@ public class MediaVaultView {
         developerField.setPromptText("Developer");
         hoursPlayedField = new TextField();
         hoursPlayedField.setPromptText("Hours Played");
-        gameBox.getChildren().addAll(gameFields, platformField, requiredSpecsField, developerField, hoursPlayedField);
+        gameBox.getChildren().addAll(gameFields, platformField, requiredSpecsField,
+                developerField, hoursPlayedField);
         setSectionVisible(gameBox, false);
 
         typeComboBox = new ComboBox<>();
@@ -271,13 +299,13 @@ public class MediaVaultView {
         formScroll.setFitToWidth(true);
         mainPane.setLeft(formScroll);
 
+        // Right: rating and review
         VBox rateBox = new VBox();
         rateBox.setPadding(new Insets(10, 10, 10, 10));
         rateBox.setPrefWidth(260);
         rateBox.setSpacing(20);
         Label ratingLabel = new Label("Rating (1 - 10)");
         ratingLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        mainPane.setLeft(formScroll);
         ratingField = new TextField();
         Label reviewLabel = new Label("Review");
         reviewLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
@@ -286,7 +314,6 @@ public class MediaVaultView {
         rateButton = new Button("Rate & Review");
 
         rateBox.getChildren().addAll(ratingLabel, ratingField, reviewLabel, reviewField, rateButton);
-
         mainPane.setRight(rateBox);
 
         // Bottom Status
@@ -299,112 +326,475 @@ public class MediaVaultView {
         bottomBox.getChildren().addAll(new Separator(), messageLabel, statisticsLabel);
         mainPane.setBottom(bottomBox);
 
-        // Add both views to stack root
+        // Add all three pages to the stack, then show the login page only.
+        // The visibility is set through the private helper rather than the
+        // public loginPage method, so nothing overridable runs during
+        // construction.
         rootStack.getChildren().addAll(loginPane, signupPane, mainPane);
+        setSectionVisible(loginPane, true);
+        setSectionVisible(signupPane, false);
+        setSectionVisible(mainPane, false);
     }
 
+    /**
+     * Shows or hides a section of the form, keeping its layout space in step
+     * with its visibility so hidden sections do not leave gaps behind.
+     *
+     * @param node    the section to show or hide
+     * @param visible true to show the section, false to hide it
+     */
     private void setSectionVisible(Node node, boolean visible) {
         node.setVisible(visible);
         node.setManaged(visible);
     }
 
+    /**
+     * Returns the root node of the whole interface so that MediaVaultApp can
+     * put it inside a Scene.
+     *
+     * @return the root container holding all three pages
+     */
     public StackPane getRoot() {
         return rootStack;
     }
 
-    // --- Login Handlers & Getters ---
+    // =====================================================================
+    // PAGE SWITCHING
+    // =====================================================================
+
+    /**
+     * Shows the login page and hides the other two.
+     * <p>
+     * <b>Postcondition:</b> only the login page is visible
+     * </p>
+     */
+    public void loginPage() {
+        setSectionVisible(loginPane, true);
+        setSectionVisible(signupPane, false);
+        setSectionVisible(mainPane, false);
+    }
+
+    /**
+     * Shows the sign-up page and hides the other two.
+     * <p>
+     * <b>Postcondition:</b> only the sign-up page is visible
+     * </p>
+     */
+    public void signupPage() {
+        setSectionVisible(loginPane, false);
+        setSectionVisible(signupPane, true);
+        setSectionVisible(mainPane, false);
+    }
+
+    /**
+     * Shows the main library page and hides the login and sign-up pages.
+     * <p>
+     * <b>Postcondition:</b> only the main page is visible
+     * </p>
+     */
+    public void mainPage() {
+        setSectionVisible(loginPane, false);
+        setSectionVisible(signupPane, false);
+        setSectionVisible(mainPane, true);
+    }
+
+    /**
+     * Switches between the login page and the sign-up page, whichever of the
+     * two is currently showing. Keeping this decision inside the view means
+     * the controller never has to touch a JavaFX node itself.
+     * <p>
+     * <b>Postcondition:</b> the login and sign-up pages have swapped
+     * visibility and both status messages are cleared
+     * </p>
+     */
+    public void swapFront() {
+        boolean loginShowing = loginPane.isVisible();
+
+        if (loginShowing) {
+            signupPage();
+        } else {
+            loginPage();
+        }
+
+        loginStatusLabel.setText("");
+        signupStatusLabel.setText("");
+    }
+
+    // =====================================================================
+    // LOGIN / SIGNUP HANDLERS AND GETTERS
+    // =====================================================================
+
+    /**
+     * Registers the handler run when the login Enter button is pressed.
+     *
+     * @param handler the controller's login handler
+     */
     public void setLoginHandler(EventHandler<ActionEvent> handler) {
         enterButton.setOnAction(handler);
     }
 
-    public void swapLoginSignup(EventHandler<ActionEvent> handler) { signupButton.setOnAction(handler); }
+    /**
+     * Registers the handler run when the Sign up link button is pressed.
+     *
+     * @param handler the controller's page-swap handler
+     */
+    public void swapLoginSignup(EventHandler<ActionEvent> handler) {
+        signupButton.setOnAction(handler);
+    }
 
-    public void setSignupHandler(EventHandler<ActionEvent> handler) { signupEnterButton.setOnAction(handler); }
+    /**
+     * Registers the handler run when the sign-up Enter button is pressed.
+     *
+     * @param handler the controller's sign-up handler
+     */
+    public void setSignupHandler(EventHandler<ActionEvent> handler) {
+        signupEnterButton.setOnAction(handler);
+    }
 
-    public void swapSignupLogin(EventHandler<ActionEvent> handler) { loginButton.setOnAction(handler); }
+    /**
+     * Registers the handler run when the Login link button is pressed.
+     *
+     * @param handler the controller's page-swap handler
+     */
+    public void swapSignupLogin(EventHandler<ActionEvent> handler) {
+        loginButton.setOnAction(handler);
+    }
 
+    /** @return the username typed on the login page */
     public String getLoginUsername() {
         return loginUsernameField.getText();
     }
 
-    public String getSignupUsername() { return signupUsernameField.getText(); }
+    /** @return the username typed on the sign-up page */
+    public String getSignupUsername() {
+        return signupUsernameField.getText();
+    }
 
+    /**
+     * Shows a status message on the login page.
+     *
+     * @param text the message to display
+     */
     public void setLoginStatus(String text) {
         loginStatusLabel.setText(text);
     }
 
-    public void setSignupStatus(String text) { signupStatusLabel.setText(text); }
-
-    public void loginPage() {
-        loginPane.setVisible(true);
-        signupPane.setVisible(false);
-        mainPane.setVisible(false);
+    /**
+     * Shows a status message on the sign-up page.
+     *
+     * @param text the message to display
+     */
+    public void setSignupStatus(String text) {
+        signupStatusLabel.setText(text);
     }
 
-    public void signupPage() {
-        loginPane.setVisible(false);
-        signupPane.setVisible(true);
-        mainPane.setVisible(false);
+    /**
+     * Empties both username fields and both status messages, so that logging
+     * out does not leave the previous user's name on screen.
+     * <p>
+     * <b>Postcondition:</b> the login and sign-up pages are blank
+     * </p>
+     */
+    public void clearLoginFields() {
+        loginUsernameField.clear();
+        signupUsernameField.clear();
+        loginStatusLabel.setText("");
+        signupStatusLabel.setText("");
     }
 
-    public void mainPage() {
-        loginPane.setVisible(false);
-        signupPane.setVisible(false);
-        mainPane.setVisible(true);
+    // =====================================================================
+    // MAIN PAGE HANDLERS
+    // =====================================================================
+
+    /**
+     * Registers the handler run when the Add Entry button is pressed.
+     *
+     * @param handler the controller's add-entry handler
+     */
+    public void setAddEntryHandler(EventHandler<ActionEvent> handler) {
+        addButton.setOnAction(handler);
     }
 
-    // --- Main Handlers ---
-    public void setAddEntryHandler(EventHandler<ActionEvent> handler) { addButton.setOnAction(handler); }
-    public void setRemoveEntryHandler(EventHandler<ActionEvent> handler) { removeButton.setOnAction(handler); }
-    public void setUpdateStatusHandler(EventHandler<ActionEvent> handler) { updateStatusButton.setOnAction(handler); }
-    public void setRateAndReviewHandler(EventHandler<ActionEvent> handler) { rateButton.setOnAction(handler); }
-    public void setFilterHandler(EventHandler<ActionEvent> handler) { filterButton.setOnAction(handler); }
-    public void setSearchHandler(EventHandler<ActionEvent> handler) { searchButton.setOnAction(handler); }
-    public void setSaveHandler(EventHandler<ActionEvent> handler) { saveButton.setOnAction(handler); }
-    // public void setLoadHandler(EventHandler<ActionEvent> handler) { loadButton.setOnAction(handler); }
+    /**
+     * Registers the handler run when the Remove Selected button is pressed.
+     *
+     * @param handler the controller's remove-entry handler
+     */
+    public void setRemoveEntryHandler(EventHandler<ActionEvent> handler) {
+        removeButton.setOnAction(handler);
+    }
 
-    // --- Getters ---
-    public String getSelectedType() { return typeComboBox.getValue(); }
-    public String getTitleInput() { return titleField.getText(); }
-    public String getGenreInput() { return genreField.getText(); }
-    public String getSelectedStatus() { return statusComboBox.getValue(); }
+    /**
+     * Registers the handler run when the Update Status button is pressed.
+     *
+     * @param handler the controller's update-status handler
+     */
+    public void setUpdateStatusHandler(EventHandler<ActionEvent> handler) {
+        updateStatusButton.setOnAction(handler);
+    }
 
-    public String getDirectorInput() { return directorField.getText(); }
-    public String getDurationInput() { return durationField.getText(); }
-    public String getReleaseYearInput() { return releaseYearField.getText(); }
+    /**
+     * Registers the handler run when the Rate &amp; Review button is pressed.
+     *
+     * @param handler the controller's rate-and-review handler
+     */
+    public void setRateAndReviewHandler(EventHandler<ActionEvent> handler) {
+        rateButton.setOnAction(handler);
+    }
 
-    public String getTotalEpisodesInput() { return totalEpisodesField.getText(); }
-    public String getWatchedEpisodesInput() { return watchedEpisodesField.getText(); }
-    public String getSeasonCountInput() { return seasonCountField.getText(); }
+    /**
+     * Registers the handler run when the Filter button is pressed.
+     *
+     * @param handler the controller's filter handler
+     */
+    public void setFilterHandler(EventHandler<ActionEvent> handler) {
+        filterButton.setOnAction(handler);
+    }
 
-    public String getPlatformInput() { return platformField.getText(); }
-    public String getRequiredSpecsInput() { return requiredSpecsField.getText(); }
-    public String getDeveloperInput() { return developerField.getText(); }
-    public String getHoursPlayedInput() { return hoursPlayedField.getText(); }
+    /**
+     * Registers the handler run when the Search button is pressed.
+     *
+     * @param handler the controller's search handler
+     */
+    public void setSearchHandler(EventHandler<ActionEvent> handler) {
+        searchButton.setOnAction(handler);
+    }
 
-    public String getRatingInput() { return ratingField.getText(); }
-    public String getReviewInput() { return reviewField.getText(); }
+    /**
+     * Registers the handler run when the Save and Log Out button is pressed.
+     *
+     * @param handler the controller's save handler
+     */
+    public void setSaveHandler(EventHandler<ActionEvent> handler) {
+        saveButton.setOnAction(handler);
+    }
 
-    public String getFilterType() { return filterTypeComboBox.getValue(); }
-    public String getFilterStatus() { return filterStatusComboBox.getValue(); }
-    public String getSearchKeyword() { return searchField.getText(); }
+    /**
+     * Registers the handler run when the Reload Saved button is pressed.
+     *
+     * @param handler the controller's load handler
+     */
+    public void setLoadHandler(EventHandler<ActionEvent> handler) {
+        loadButton.setOnAction(handler);
+    }
 
+    /**
+     * Registers what should happen when the user highlights a different row in
+     * the library list. The view passes out the plain title of the selected
+     * entry, so the controller never has to know how a row is formatted.
+     * <p>
+     * <b>Postcondition:</b> the given action runs on every selection change
+     * </p>
+     *
+     * @param action the action to run with the selected entry's title
+     */
+    public void setEntrySelectedHandler(Consumer<String> action) {
+        entryListView.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldVal, newVal) -> action.accept(extractTitle(newVal)));
+    }
+
+    // =====================================================================
+    // INPUT GETTERS
+    // =====================================================================
+
+    /** @return the media type selected in the add-entry form, or null */
+    public String getSelectedType() {
+        return typeComboBox.getValue();
+    }
+
+    /** @return the text currently in the title field */
+    public String getTitleInput() {
+        return titleField.getText();
+    }
+
+    /** @return the text currently in the genre field */
+    public String getGenreInput() {
+        return genreField.getText();
+    }
+
+    /** @return the status selected in the add-entry form, or null */
+    public String getSelectedStatus() {
+        return statusComboBox.getValue();
+    }
+
+    /** @return the text in the Movie director field */
+    public String getDirectorInput() {
+        return directorField.getText();
+    }
+
+    /** @return the text in the Movie duration field */
+    public String getDurationInput() {
+        return durationField.getText();
+    }
+
+    /** @return the text in the Movie release-year field */
+    public String getReleaseYearInput() {
+        return releaseYearField.getText();
+    }
+
+    /** @return the text in the TV series total-episodes field */
+    public String getTotalEpisodesInput() {
+        return totalEpisodesField.getText();
+    }
+
+    /** @return the text in the TV series watched-episodes field */
+    public String getWatchedEpisodesInput() {
+        return watchedEpisodesField.getText();
+    }
+
+    /** @return the text in the TV series season-count field */
+    public String getSeasonCountInput() {
+        return seasonCountField.getText();
+    }
+
+    /** @return the text in the video game platform field */
+    public String getPlatformInput() {
+        return platformField.getText();
+    }
+
+    /** @return the text in the video game required-specs field */
+    public String getRequiredSpecsInput() {
+        return requiredSpecsField.getText();
+    }
+
+    /** @return the text in the video game developer field */
+    public String getDeveloperInput() {
+        return developerField.getText();
+    }
+
+    /** @return the text in the video game hours-played field */
+    public String getHoursPlayedInput() {
+        return hoursPlayedField.getText();
+    }
+
+    /** @return the text in the rating field */
+    public String getRatingInput() {
+        return ratingField.getText();
+    }
+
+    /** @return the text in the review field */
+    public String getReviewInput() {
+        return reviewField.getText();
+    }
+
+    /** @return the type chosen in the filter bar */
+    public String getFilterType() {
+        return filterTypeComboBox.getValue();
+    }
+
+    /** @return the status chosen in the filter bar */
+    public String getFilterStatus() {
+        return filterStatusComboBox.getValue();
+    }
+
+    /** @return the keyword typed in the search field */
+    public String getSearchKeyword() {
+        return searchField.getText();
+    }
+
+    /**
+     * Returns the plain title of the entry currently highlighted in the list,
+     * with the type, status, and rating decoration stripped off.
+     *
+     * @return the selected entry's title, or an empty String if none is
+     *         selected
+     */
     public String getSelectedEntryTitle() {
-        String selected = entryListView.getSelectionModel().getSelectedItem();
-        if (selected == null || selected.isEmpty()) return "";
-        int closingBracket = selected.indexOf(']');
-        int dashIndex = selected.indexOf(" - ");
-        if (closingBracket != -1 && dashIndex != -1 && dashIndex > closingBracket) {
-            return selected.substring(closingBracket + 2, dashIndex).trim();
-        }
-        return selected;
+        return extractTitle(entryListView.getSelectionModel().getSelectedItem());
     }
 
-    public void displayEntries(ArrayList<String> entries) { entryListView.getItems().setAll(entries); }
-    // public void showEntryDetails(String details) { detailsArea.setText(details); }
-    public void showMessage(String message) { messageLabel.setText(message); }
-    public void showStatistics(String summary) { statisticsLabel.setText(summary); }
+    /**
+     * Pulls the plain title out of a formatted list row. A row looks like
+     * {@code [Movie] Some Title - COMPLETED - 9/10}, so the type label is
+     * dropped from the front and the status and rating are dropped from the
+     * back. The two trailing fields are located from the end of the row rather
+     * than the front, so a title that itself contains the separator, such as
+     * {@code Mission - Impossible}, still comes back whole.
+     *
+     * @param row the formatted row text, which may be null
+     * @return the plain title, or an empty String if the row is null or empty
+     */
+    private String extractTitle(String row) {
+        String title;
 
+        if (row == null || row.trim().length() == 0) {
+            title = "";
+        } else {
+            int closingBracket = row.indexOf(']');
+            String remainder;
+
+            if (closingBracket == -1) {
+                remainder = row;
+            } else {
+                remainder = row.substring(closingBracket + 1);
+            }
+
+            int lastSeparator = remainder.lastIndexOf(ROW_SEPARATOR);
+            int statusSeparator = -1;
+
+            if (lastSeparator > 0) {
+                statusSeparator = remainder.lastIndexOf(ROW_SEPARATOR, lastSeparator - 1);
+            }
+
+            if (statusSeparator > 0) {
+                title = remainder.substring(0, statusSeparator).trim();
+            } else {
+                title = remainder.trim();
+            }
+        }
+
+        return title;
+    }
+
+    // =====================================================================
+    // DISPLAY METHODS
+    // =====================================================================
+
+    /**
+     * Replaces the contents of the library list with the given display lines.
+     * The controller has already turned each entry into a one-line String, so
+     * the view never sees a model object.
+     *
+     * @param entries the display lines to show, one per entry
+     */
+    public void displayEntries(ArrayList<String> entries) {
+        entryListView.getItems().setAll(entries);
+    }
+
+    /**
+     * Shows the full details of a single entry in the details area.
+     *
+     * @param details the pre-formatted detail text produced by the model
+     */
+    public void showEntryDetails(String details) {
+        detailsArea.setText(details);
+    }
+
+    /**
+     * Shows a short status or error message at the bottom of the main page.
+     *
+     * @param message the message to display
+     */
+    public void showMessage(String message) {
+        messageLabel.setText(message);
+    }
+
+    /**
+     * Shows the library summary line at the bottom of the main page.
+     *
+     * @param summary the summary text produced by the model
+     */
+    public void showStatistics(String summary) {
+        statisticsLabel.setText(summary);
+    }
+
+    /**
+     * Clears the data-entry fields after a successful add or rating so the
+     * form is ready for the next entry.
+     * <p>
+     * <b>Postcondition:</b> every entry, rating, and review field is empty
+     * </p>
+     */
     public void clearInputFields() {
         titleField.clear(); genreField.clear(); directorField.clear();
         durationField.clear(); releaseYearField.clear(); totalEpisodesField.clear();

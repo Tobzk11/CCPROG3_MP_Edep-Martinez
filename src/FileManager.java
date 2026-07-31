@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * Handles saving a Library to a plain text file and rebuilding a Library from
@@ -25,16 +24,24 @@ import java.util.ArrayList;
  * or line break typed by the user is replaced with a space before writing, so
  * that a single entry can never spill across field or line boundaries.
  * </p>
+ * <p>
+ * The target file name is not fixed for the lifetime of the object. MediaVault
+ * gives each user their own save file, so the controller repoints this manager
+ * at the appropriate file when a user logs in or signs up.
+ * </p>
  */
 public class FileManager {
 
     /** The character used to separate fields within a saved line. */
     public static final String DELIMITER = "|";
 
+    /** The text appended to a username to form that user's save file name. */
+    public static final String FILE_SUFFIX = "_library.txt";
+
     /** The regular expression form of the delimiter, for splitting lines. */
     private static final String SPLIT_PATTERN = "\\|";
 
-    private final String FILE_NAME;
+    private String fileName;
     private int skippedLineCount;
 
     /**
@@ -48,17 +55,72 @@ public class FileManager {
      * @param fileName the path of the save file to read from and write to
      */
     public FileManager(String fileName) {
-        this.FILE_NAME = fileName;
+        this.fileName = fileName;
         this.skippedLineCount = 0;
     }
 
     /**
-     * Returns the name of the file this manager reads from and writes to.
+     * Returns the name of the file this manager currently reads from and
+     * writes to.
      *
-     * @return the file name
+     * @return the current file name
      */
     public String getFileName() {
-        return this.FILE_NAME;
+        return this.fileName;
+    }
+
+    /**
+     * Points this manager at a different save file. Used when a user logs in
+     * so that each account reads and writes its own library.
+     * <p>
+     * <b>Precondition:</b> fileName is not null <br>
+     * <b>Postcondition:</b> subsequent saves and loads use the given file
+     * </p>
+     *
+     * @param fileName the path of the save file to use from now on
+     */
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    /**
+     * Builds the save file name belonging to the given username. Characters
+     * that are not letters, digits, or underscores are replaced so that a
+     * typed username can never escape the working folder or produce an
+     * illegal file name.
+     * <p>
+     * <b>Precondition:</b> username is not null <br>
+     * <b>Postcondition:</b> nothing is created on disk; only a name is built
+     * </p>
+     *
+     * @param username the username to build a file name for
+     * @return the save file name for that user
+     */
+    public static String buildFileNameFor(String username) {
+        StringBuilder safe = new StringBuilder();
+
+        for (int i = 0; i < username.length(); i++) {
+            char c = username.charAt(i);
+
+            if (Character.isLetterOrDigit(c) || c == '_') {
+                safe.append(Character.toLowerCase(c));
+            } else {
+                safe.append('_');
+            }
+        }
+
+        return safe.toString() + FILE_SUFFIX;
+    }
+
+    /**
+     * Reports whether the file this manager currently targets already exists.
+     * The controller uses this to tell an existing account from a new one.
+     *
+     * @return true if the save file exists, false otherwise
+     */
+    public boolean fileExists() {
+        File file = new File(this.fileName);
+        return file.exists();
     }
 
     /**
@@ -86,7 +148,7 @@ public class FileManager {
         BufferedWriter writer = null;
 
         try {
-            writer = new BufferedWriter(new FileWriter(this.FILE_NAME));
+            writer = new BufferedWriter(new FileWriter(this.fileName));
 
             for (MediaEntry e : library.getAllEntries()) {
                 writer.write(formatEntry(e));
@@ -115,7 +177,7 @@ public class FileManager {
      */
     public Library loadLibrary() throws IOException {
         Library library = new Library();
-        File file = new File(this.FILE_NAME);
+        File file = new File(this.fileName);
         this.skippedLineCount = 0;
 
         if (file.exists()) {

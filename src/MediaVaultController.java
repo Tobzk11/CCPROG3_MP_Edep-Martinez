@@ -7,9 +7,15 @@ import java.util.ArrayList;
  * pulls raw text out of the view, validates it, drives the model, then pushes
  * finished Strings back to the view for display.
  * <p>
- * The view is never given a MediaEntry, a Library, or a MediaStatus. Anything
- * the view shows has already been converted to a String here, which keeps the
- * presentation layer completely free of model types.
+ * The view is never given a MediaEntry, a Library, a UserProfile, or a
+ * MediaStatus. Anything the view shows has already been converted to a String
+ * here, which keeps the presentation layer completely free of model types.
+ * Equally, the controller never touches a JavaFX node; page switching is asked
+ * for through named view methods such as mainPage and swapFront.
+ * </p>
+ * <p>
+ * Each account owns its own save file, named after the user. Logging in reads
+ * that file into the working library; signing up creates it.
  * </p>
  */
 public class MediaVaultController {
@@ -18,14 +24,15 @@ public class MediaVaultController {
     private final MediaVaultView VIEW;
     private final FileManager FILE_MANAGER;
 
+    private UserProfile currentProfile;
     private String buildErrorMessage;
 
     /**
      * Constructs a controller bound to the given model, view, and file manager.
      * <p>
      * <b>Precondition:</b> library, view, and fileManager are not null <br>
-     * <b>Postcondition:</b> the controller holds all three collaborators but
-     * has not yet registered any event handlers
+     * <b>Postcondition:</b> the controller holds all three collaborators, with
+     * no user logged in and no event handlers registered yet
      * </p>
      *
      * @param library     the Library holding all media entries
@@ -37,15 +44,16 @@ public class MediaVaultController {
         this.LIBRARY = library;
         this.VIEW = view;
         this.FILE_MANAGER = fileManager;
+        this.currentProfile = null;
         this.buildErrorMessage = "";
     }
 
     /**
-     * Registers every event handler with the view and performs the first
-     * refresh so the interface opens showing the current library contents.
+     * Registers every event handler with the view and shows the login page, so
+     * the program opens asking who is using it.
      * <p>
      * <b>Postcondition:</b> all view controls are wired to their handlers and
-     * the entry list reflects the library
+     * the login page is showing
      * </p>
      */
     public void initController() {
@@ -53,6 +61,7 @@ public class MediaVaultController {
         this.VIEW.setSignupHandler(e -> handleSignup());
         this.VIEW.swapLoginSignup(e -> handleSwapFront());
         this.VIEW.swapSignupLogin(e -> handleSwapFront());
+
         this.VIEW.setAddEntryHandler(e -> handleAddEntry());
         this.VIEW.setRemoveEntryHandler(e -> handleRemoveEntry());
         this.VIEW.setUpdateStatusHandler(e -> handleUpdateStatus());
@@ -60,41 +69,146 @@ public class MediaVaultController {
         this.VIEW.setFilterHandler(e -> handleFilter());
         this.VIEW.setSearchHandler(e -> handleSearch());
         this.VIEW.setSaveHandler(e -> handleSave());
-        // this.VIEW.setLoadHandler(e -> handleLoad());
+        this.VIEW.setLoadHandler(e -> handleLoad());
+        this.VIEW.setEntrySelectedHandler(title -> showDetailsFor(title));
 
-        refreshView();
+        this.VIEW.loginPage();
     }
 
+    // =====================================================================
+    // LOGIN AND SIGN-UP
+    // =====================================================================
+
+    /**
+     * Signs an existing user in. The username must not be blank and must have
+     * a save file already, which is what distinguishes an existing account
+     * from a new one. On success the user's saved entries are read into the
+     * working library and the main page is shown.
+     * <p>
+     * <b>Postcondition:</b> on success a profile is active, the library holds
+     * that user's saved entries, and the main page is showing; otherwise a
+     * message is placed on the login page and nothing else changes
+     * </p>
+     */
     public void handleLogin() {
-        // u can put try and catch dito if needed
-        String username = this.VIEW.getLoginUsername().trim();
+        String username = safeTrim(this.VIEW.getLoginUsername());
 
-        this.VIEW.setSignupStatus("Username does not exist"); // use this if di nahanap ung username
-
-        this.VIEW.mainPage(); // basically this shows ung main page
-        this.VIEW.showMessage("Welcome, " + username + "!"); // kasama din ito
-    }
-
-    public void handleSignup() {
-        String username = this.VIEW.getSignupUsername().trim();
         if (username.isEmpty()) {
             this.VIEW.setLoginStatus("Please enter a username.");
         } else {
-            // Transition to main app view
-            this.VIEW.mainPage();
-            this.VIEW.showMessage("Welcome, " + username + "!");
+            this.FILE_MANAGER.setFileName(FileManager.buildFileNameFor(username));
+
+            if (!this.FILE_MANAGER.fileExists()) {
+                this.VIEW.setLoginStatus("Username does not exist. Try signing up.");
+            } else {
+                try {
+                    Library loaded = this.FILE_MANAGER.loadLibrary();
+                    replaceLibraryContents(loaded);
+
+                    this.currentProfile = new UserProfile(username, this.LIBRARY);
+
+                    String message = "Welcome back, " + username + "! Loaded "
+                            + this.LIBRARY.getAllEntries().size() + " entries.";
+
+                    if (this.FILE_MANAGER.getSkippedLineCount() > 0) {
+                        message = message + " Skipped "
+                                + this.FILE_MANAGER.getSkippedLineCount()
+                                + " unreadable line(s).";
+                    }
+
+                    enterMainPage(message);
+                } catch (IOException ex) {
+                    this.VIEW.setLoginStatus("Could not open your library: " + ex.getMessage());
+                }
+            }
         }
     }
 
-    public void handleSwapFront() {
-        boolean visibleLogin = this.VIEW.loginPane.isVisible();
+    /**
+     * Creates a new account. The username must not be blank and must not
+     * already have a save file. On success an empty save file is written so
+     * that the account exists on disk, and the main page is shown.
+     * <p>
+     * <b>Postcondition:</b> on success a new empty library and save file exist
+     * for the user and the main page is showing; otherwise a message is placed
+     * on the sign-up page and nothing else changes
+     * </p>
+     */
+    public void handleSignup() {
+        String username = safeTrim(this.VIEW.getSignupUsername());
 
-        this.VIEW.loginPane.setVisible(!visibleLogin);
-        this.VIEW.loginPane.setManaged(!visibleLogin);
+        if (username.isEmpty()) {
+            this.VIEW.setSignupStatus("Please enter a username.");
+        } else {
+            this.FILE_MANAGER.setFileName(FileManager.buildFileNameFor(username));
 
-        this.VIEW.signupPane.setVisible(visibleLogin);
-        this.VIEW.signupPane.setManaged(visibleLogin);
+            if (this.FILE_MANAGER.fileExists()) {
+                this.VIEW.setSignupStatus("That username is already taken.");
+            } else {
+                this.LIBRARY.getAllEntries().clear();
+
+                try {
+                    this.FILE_MANAGER.saveLibrary(this.LIBRARY);
+                    this.currentProfile = new UserProfile(username, this.LIBRARY);
+                    enterMainPage("Welcome, " + username + "! Your library is empty.");
+                } catch (IOException ex) {
+                    this.VIEW.setSignupStatus("Could not create your library: " + ex.getMessage());
+                }
+            }
+        }
     }
+
+    /**
+     * Switches the front page between login and sign-up. The decision of which
+     * page is currently showing belongs to the view, so this simply asks it to
+     * swap.
+     * <p>
+     * <b>Postcondition:</b> the login and sign-up pages have swapped
+     * </p>
+     */
+    public void handleSwapFront() {
+        this.VIEW.swapFront();
+    }
+
+    /**
+     * Moves the interface to the main page and refreshes everything on it.
+     * Shared by the login and sign-up paths.
+     *
+     * @param message the greeting to show in the message area
+     */
+    private void enterMainPage(String message) {
+        this.VIEW.clearLoginFields();
+        this.VIEW.clearInputFields();
+        this.VIEW.showEntryDetails("");
+        this.VIEW.mainPage();
+        refreshView();
+        this.VIEW.showMessage(message);
+    }
+
+    /**
+     * Empties the working library and refills it from the given one. The
+     * library object itself is kept rather than swapped out, so every other
+     * reference to it stays valid.
+     * <p>
+     * <b>Precondition:</b> source is not null <br>
+     * <b>Postcondition:</b> the working library holds exactly the entries of
+     * the source library
+     * </p>
+     *
+     * @param source the library whose entries should replace the current ones
+     */
+    private void replaceLibraryContents(Library source) {
+        this.LIBRARY.getAllEntries().clear();
+
+        for (MediaEntry e : source.getAllEntries()) {
+            this.LIBRARY.addEntry(e);
+        }
+    }
+
+    // =====================================================================
+    // LIBRARY ACTIONS
+    // =====================================================================
+
     /**
      * Reads the entry fields from the view, validates them, and adds a new
      * entry of the selected media type to the library. Duplicate titles, blank
@@ -111,16 +225,16 @@ public class MediaVaultController {
         String genre = safeTrim(this.VIEW.getGenreInput());
         MediaStatus status = parseStatus(this.VIEW.getSelectedStatus());
 
-        if (title.length() == 0) {
+        if (title.isEmpty()) {
             message = "Title cannot be empty.";
-        } else if (genre.length() == 0) {
+        } else if (genre.isEmpty()) {
             message = "Genre cannot be empty.";
         } else if (status == null) {
             message = "Please select a valid status.";
         } else if (this.LIBRARY.findEntry(title) != null) {
             message = "An entry titled \"" + title + "\" already exists.";
         } else {
-            MediaEntry newEntry = buildEntry(safeTrim(this.VIEW.getSelectedType()),
+            MediaEntry newEntry = buildEntry(normalizeType(this.VIEW.getSelectedType()),
                     title, genre, status);
 
             if (newEntry == null) {
@@ -139,18 +253,19 @@ public class MediaVaultController {
     /**
      * Removes the entry currently selected in the view from the library.
      * <p>
-     * <b>Postcondition:</b> the selected entry is removed when one is
-     * selected and found; the view is refreshed and told the outcome
+     * <b>Postcondition:</b> the selected entry is removed when one is selected
+     * and found; the view is refreshed and told the outcome
      * </p>
      */
     public void handleRemoveEntry() {
         String message;
         String title = safeTrim(this.VIEW.getSelectedEntryTitle());
 
-        if (title.length() == 0) {
+        if (title.isEmpty()) {
             message = "Select an entry to remove.";
         } else if (this.LIBRARY.removeEntry(title)) {
             message = "Removed: " + title;
+            this.VIEW.showEntryDetails("");
         } else {
             message = "No entry titled \"" + title + "\" was found.";
         }
@@ -172,7 +287,7 @@ public class MediaVaultController {
         String title = safeTrim(this.VIEW.getSelectedEntryTitle());
         MediaStatus newStatus = parseStatus(this.VIEW.getSelectedStatus());
 
-        if (title.length() == 0) {
+        if (title.isEmpty()) {
             message = "Select an entry to update.";
         } else if (newStatus == null) {
             message = "Please select a valid status.";
@@ -183,6 +298,7 @@ public class MediaVaultController {
                 message = "No entry titled \"" + title + "\" was found.";
             } else {
                 entry.updateStatus(newStatus);
+                this.VIEW.showEntryDetails(entry.getDetails());
                 message = title + " is now " + newStatus + ".";
             }
         }
@@ -206,7 +322,7 @@ public class MediaVaultController {
         String ratingText = safeTrim(this.VIEW.getRatingInput());
         String review = safeTrim(this.VIEW.getReviewInput());
 
-        if (title.length() == 0) {
+        if (title.isEmpty()) {
             message = "Select an entry to rate.";
         } else {
             MediaEntry entry = this.LIBRARY.findEntry(title);
@@ -222,6 +338,7 @@ public class MediaVaultController {
 
                     if (entry.setRatingAndReview(rating, review)) {
                         this.VIEW.clearInputFields();
+                        this.VIEW.showEntryDetails(entry.getDetails());
                         message = "Rated " + title + ": " + rating + "/10";
                     } else {
                         message = "Rating must be a whole number from "
@@ -242,7 +359,7 @@ public class MediaVaultController {
 
     /**
      * Filters the displayed list by the media type and status currently chosen
-     * in the view. Either selector may be left on its "All" option, in which
+     * in the view. Either selector may be left on its "None" option, in which
      * case that dimension is not narrowed.
      * <p>
      * <b>Postcondition:</b> the view shows only entries matching the chosen
@@ -250,9 +367,8 @@ public class MediaVaultController {
      * </p>
      */
     public void handleFilter() {
-        String typeChoice = safeTrim(this.VIEW.getFilterType());
-        String statusChoice = safeTrim(this.VIEW.getFilterStatus());
-        MediaStatus status = parseStatus(statusChoice);
+        String typeChoice = normalizeType(this.VIEW.getFilterType());
+        MediaStatus status = parseStatus(this.VIEW.getFilterStatus());
 
         ArrayList<MediaEntry> filtered;
 
@@ -263,11 +379,10 @@ public class MediaVaultController {
         }
 
         ArrayList<MediaEntry> result = new ArrayList<MediaEntry>();
-        boolean filterByType = typeChoice.length() > 0
-                && !typeChoice.equalsIgnoreCase("All");
+        boolean filterByType = !typeChoice.isEmpty();
 
         for (MediaEntry e : filtered) {
-            if (!filterByType || e.getMediaType().equalsIgnoreCase(typeChoice)) {
+            if (!filterByType || e.getMediaType().equals(typeChoice)) {
                 result.add(e);
             }
         }
@@ -275,7 +390,7 @@ public class MediaVaultController {
         this.VIEW.displayEntries(toDisplayList(result));
         this.VIEW.showMessage("Showing " + result.size() + " of "
                 + this.LIBRARY.getAllEntries().size() + " entries.");
-        this.VIEW.showStatistics(this.LIBRARY.getSummary());
+        this.VIEW.showStatistics(buildStatistics());
     }
 
     /**
@@ -292,7 +407,7 @@ public class MediaVaultController {
         ArrayList<MediaEntry> results;
         String message;
 
-        if (keyword.length() == 0) {
+        if (keyword.isEmpty()) {
             results = this.LIBRARY.getAllEntries();
             message = "Showing all entries.";
         } else {
@@ -302,37 +417,44 @@ public class MediaVaultController {
 
         this.VIEW.displayEntries(toDisplayList(results));
         this.VIEW.showMessage(message);
-        this.VIEW.showStatistics(this.LIBRARY.getSummary());
+        this.VIEW.showStatistics(buildStatistics());
     }
 
     /**
-     * Writes the current library to disk through the FileManager, reporting
-     * any input or output failure to the user instead of letting it escape.
+     * Writes the current library to the logged-in user's save file and then
+     * logs them out, returning the interface to the login page. Any input or
+     * output failure is reported to the user instead of escaping.
      * <p>
-     * <b>Postcondition:</b> the save file reflects the library, or the view is
-     * told why the write failed
+     * <b>Postcondition:</b> on success the save file reflects the library and
+     * no user is logged in; on failure the user stays logged in and is told
+     * what went wrong
      * </p>
      */
     public void handleSave() {
-        String message;
+        if (this.currentProfile == null) {
+            this.VIEW.showMessage("No user is logged in.");
+        } else {
+            try {
+                this.FILE_MANAGER.saveLibrary(this.LIBRARY);
 
-        try {
-            this.FILE_MANAGER.saveLibrary(this.LIBRARY);
-            message = "Saved " + this.LIBRARY.getAllEntries().size()
-                    + " entries to " + this.FILE_MANAGER.getFileName() + ".";
-        } catch (IOException ex) {
-            message = "Could not save to " + this.FILE_MANAGER.getFileName()
-                    + ": " + ex.getMessage();
+                this.LIBRARY.getAllEntries().clear();
+                this.currentProfile = null;
+
+                this.VIEW.clearInputFields();
+                this.VIEW.clearLoginFields();
+                this.VIEW.showEntryDetails("");
+                this.VIEW.displayEntries(new ArrayList<String>());
+                this.VIEW.loginPage();
+            } catch (IOException ex) {
+                this.VIEW.showMessage("Could not save to "
+                        + this.FILE_MANAGER.getFileName() + ": " + ex.getMessage());
+            }
         }
-
-        this.VIEW.showMessage(message);
-        this.VIEW.loginPage();
     }
 
     /**
-     * Reads the save file through the FileManager and replaces the contents of
-     * the current library with what was read. The library object itself is
-     * kept rather than swapped out, so every other reference to it stays valid.
+     * Re-reads the logged-in user's save file, discarding any unsaved changes
+     * made since the last save.
      * <p>
      * <b>Postcondition:</b> the library holds exactly the entries read from
      * file, or is left untouched if the read failed
@@ -341,29 +463,58 @@ public class MediaVaultController {
     public void handleLoad() {
         String message;
 
-        try {
-            Library loaded = this.FILE_MANAGER.loadLibrary();
+        if (this.currentProfile == null) {
+            message = "No user is logged in.";
+        } else {
+            try {
+                Library loaded = this.FILE_MANAGER.loadLibrary();
+                replaceLibraryContents(loaded);
 
-            this.LIBRARY.getAllEntries().clear();
-            for (MediaEntry e : loaded.getAllEntries()) {
-                this.LIBRARY.addEntry(e);
+                message = "Reloaded " + this.LIBRARY.getAllEntries().size()
+                        + " entries from " + this.FILE_MANAGER.getFileName() + ".";
+
+                if (this.FILE_MANAGER.getSkippedLineCount() > 0) {
+                    message = message + " Skipped "
+                            + this.FILE_MANAGER.getSkippedLineCount()
+                            + " unreadable line(s).";
+                }
+
+                this.VIEW.showEntryDetails("");
+            } catch (IOException ex) {
+                message = "Could not load from " + this.FILE_MANAGER.getFileName()
+                        + ": " + ex.getMessage();
             }
-
-            message = "Loaded " + this.LIBRARY.getAllEntries().size()
-                    + " entries from " + this.FILE_MANAGER.getFileName() + ".";
-
-            if (this.FILE_MANAGER.getSkippedLineCount() > 0) {
-                message = message + " Skipped "
-                        + this.FILE_MANAGER.getSkippedLineCount()
-                        + " unreadable line(s).";
-            }
-        } catch (IOException ex) {
-            message = "Could not load from " + this.FILE_MANAGER.getFileName()
-                    + ": " + ex.getMessage();
         }
 
         this.VIEW.showMessage(message);
         refreshView();
+    }
+
+    /**
+     * Looks up the entry with the given title and sends its full details to
+     * the view. Called whenever the user highlights a row in the list, which
+     * is where the polymorphic getDetails of each subclass becomes visible.
+     * <p>
+     * <b>Postcondition:</b> the view's detail area shows the entry's details,
+     * or is cleared when nothing is selected
+     * </p>
+     *
+     * @param title the title of the entry whose details should be shown
+     */
+    public void showDetailsFor(String title) {
+        String cleanTitle = safeTrim(title);
+
+        if (cleanTitle.isEmpty()) {
+            this.VIEW.showEntryDetails("");
+        } else {
+            MediaEntry entry = this.LIBRARY.findEntry(cleanTitle);
+
+            if (entry == null) {
+                this.VIEW.showEntryDetails("No entry selected.");
+            } else {
+                this.VIEW.showEntryDetails(entry.getDetails());
+            }
+        }
     }
 
     /**
@@ -376,28 +527,31 @@ public class MediaVaultController {
      */
     public void refreshView() {
         this.VIEW.displayEntries(toDisplayList(this.LIBRARY.getAllEntries()));
-        this.VIEW.showStatistics(this.LIBRARY.getSummary());
+        this.VIEW.showStatistics(buildStatistics());
     }
 
-    /**
-     * Looks up the entry with the given title and sends its full details to
-     * the view. Used when the user selects an entry from the list.
-     * <p>
-     * <b>Postcondition:</b> the view's detail area shows the entry's details,
-     * or a notice that it could not be found
-     * </p>
-     *
-     * @param title the title of the entry whose details should be shown
-     */
-    /* public void showDetailsFor(String title) {
-        MediaEntry entry = this.LIBRARY.findEntry(safeTrim(title));
+    // =====================================================================
+    // HELPERS
+    // =====================================================================
 
-        if (entry == null) {
-            this.VIEW.showEntryDetails("No entry selected.");
+    /**
+     * Builds the statistics text shown at the bottom of the main page. When a
+     * user is logged in this is their personal greeting and summary from
+     * UserProfile; otherwise it is the plain library summary.
+     *
+     * @return the statistics text to display
+     */
+    private String buildStatistics() {
+        String text;
+
+        if (this.currentProfile == null) {
+            text = this.LIBRARY.getSummary();
         } else {
-            this.VIEW.showEntryDetails(entry.getDetails());
+            text = this.currentProfile.viewSummary();
         }
-    } */
+
+        return text;
+    }
 
     /**
      * Converts a list of MediaEntry objects into the one-line summary Strings
@@ -428,7 +582,9 @@ public class MediaVaultController {
     /**
      * Converts a status label chosen in the view into a MediaStatus constant.
      * Spaces are accepted in place of underscores so that a control offering
-     * "In Progress" still resolves correctly.
+     * "In Progress" still resolves correctly. Any label that is not a status,
+     * including the "None" option in the filter bar, yields null, which the
+     * callers read as "no status chosen".
      *
      * @param text the status label taken from the view
      * @return the matching MediaStatus, or null if the label matches none
@@ -450,11 +606,41 @@ public class MediaVaultController {
     }
 
     /**
+     * Converts a media type label chosen in the view into the exact label that
+     * getMediaType returns on the model side. The dropdowns read "TV Series"
+     * and "Video Game" for the user's benefit, while the model uses "TVSeries"
+     * and "VideoGame", so the spaces are removed before matching. Any label
+     * that is not one of the three types, including the "None" filter option,
+     * yields an empty String, which the callers read as "no type chosen".
+     *
+     * @param text the media type label taken from the view
+     * @return the canonical media type label, or an empty String if the label
+     *         matches none
+     */
+    private String normalizeType(String text) {
+        String result = "";
+
+        if (text != null) {
+            String compact = text.trim().replace(" ", "");
+
+            if (compact.equalsIgnoreCase("Movie")) {
+                result = "Movie";
+            } else if (compact.equalsIgnoreCase("TVSeries")) {
+                result = "TVSeries";
+            } else if (compact.equalsIgnoreCase("VideoGame")) {
+                result = "VideoGame";
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Builds a new MediaEntry of the requested type from the type-specific
      * fields currently in the view. When a field cannot be read, the reason is
      * stored in buildErrorMessage and null is returned.
      *
-     * @param type   the media type label selected in the view
+     * @param type   the canonical media type label from normalizeType
      * @param title  the validated title
      * @param genre  the validated genre
      * @param status the validated status
@@ -467,51 +653,54 @@ public class MediaVaultController {
         this.buildErrorMessage = "";
 
         try {
-            if (type.equalsIgnoreCase("Movie")) {
-                String director = safeTrim(this.VIEW.getDirectorInput());
-                int duration = Integer.parseInt(safeTrim(this.VIEW.getDurationInput()));
-                int year = Integer.parseInt(safeTrim(this.VIEW.getReleaseYearInput()));
+            switch (type) {
+                case "Movie" -> {
+                    String director = safeTrim(this.VIEW.getDirectorInput());
+                    int duration = Integer.parseInt(safeTrim(this.VIEW.getDurationInput()));
+                    int year = Integer.parseInt(safeTrim(this.VIEW.getReleaseYearInput()));
 
-                if (director.length() == 0) {
-                    this.buildErrorMessage = "Director cannot be empty.";
-                } else if (duration <= 0) {
-                    this.buildErrorMessage = "Duration must be greater than zero.";
-                } else {
-                    entry = new Movie(title, genre, status, director, duration, year);
+                    if (director.isEmpty()) {
+                        this.buildErrorMessage = "Director cannot be empty.";
+                    } else if (duration <= 0) {
+                        this.buildErrorMessage = "Duration must be greater than zero.";
+                    } else {
+                        entry = new Movie(title, genre, status, director, duration, year);
+                    }
                 }
-            } else if (type.equalsIgnoreCase("TV Series")) {
-                int totalEps = Integer.parseInt(safeTrim(this.VIEW.getTotalEpisodesInput()));
-                int watchedEps = Integer.parseInt(safeTrim(this.VIEW.getWatchedEpisodesInput()));
-                int seasons = Integer.parseInt(safeTrim(this.VIEW.getSeasonCountInput()));
+                case "TVSeries" -> {
+                    int totalEps = Integer.parseInt(safeTrim(this.VIEW.getTotalEpisodesInput()));
+                    int watchedEps = Integer.parseInt(safeTrim(this.VIEW.getWatchedEpisodesInput()));
+                    int seasons = Integer.parseInt(safeTrim(this.VIEW.getSeasonCountInput()));
 
-                if (totalEps <= 0) {
-                    this.buildErrorMessage = "Total episodes must be greater than zero.";
-                } else if (watchedEps < 0 || watchedEps > totalEps) {
-                    this.buildErrorMessage = "Watched episodes must be between 0 and "
-                            + totalEps + ".";
-                } else if (seasons <= 0) {
-                    this.buildErrorMessage = "Season count must be greater than zero.";
-                } else {
-                    entry = new TVSeries(title, genre, status, totalEps, watchedEps, seasons);
+                    if (totalEps <= 0) {
+                        this.buildErrorMessage = "Total episodes must be greater than zero.";
+                    } else if (watchedEps < 0 || watchedEps > totalEps) {
+                        this.buildErrorMessage = "Watched episodes must be between 0 and "
+                                + totalEps + ".";
+                    } else if (seasons <= 0) {
+                        this.buildErrorMessage = "Season count must be greater than zero.";
+                    } else {
+                        entry = new TVSeries(title, genre, status, totalEps, watchedEps, seasons);
+                    }
                 }
-            } else if (type.equalsIgnoreCase("Video Game")) {
-                String platform = safeTrim(this.VIEW.getPlatformInput());
-                String specs = safeTrim(this.VIEW.getRequiredSpecsInput());
-                String developer = safeTrim(this.VIEW.getDeveloperInput());
-                double hours = Double.parseDouble(safeTrim(this.VIEW.getHoursPlayedInput()));
+                case "VideoGame" -> {
+                    String platform = safeTrim(this.VIEW.getPlatformInput());
+                    String specs = safeTrim(this.VIEW.getRequiredSpecsInput());
+                    String developer = safeTrim(this.VIEW.getDeveloperInput());
+                    double hours = Double.parseDouble(safeTrim(this.VIEW.getHoursPlayedInput()));
 
-                if (platform.length() == 0) {
-                    this.buildErrorMessage = "Platform cannot be empty.";
-                } else if (developer.length() == 0) {
-                    this.buildErrorMessage = "Developer cannot be empty.";
-                } else if (hours < 0) {
-                    this.buildErrorMessage = "Hours played cannot be negative.";
-                } else {
-                    entry = new VideoGame(title, genre, status, platform, specs,
-                            developer, hours);
+                    if (platform.isEmpty()) {
+                        this.buildErrorMessage = "Platform cannot be empty.";
+                    } else if (developer.isEmpty()) {
+                        this.buildErrorMessage = "Developer cannot be empty.";
+                    } else if (hours < 0) {
+                        this.buildErrorMessage = "Hours played cannot be negative.";
+                    } else {
+                        entry = new VideoGame(title, genre, status, platform, specs,
+                                developer, hours);
+                    }
                 }
-            } else {
-                this.buildErrorMessage = "Please select a media type.";
+                default -> this.buildErrorMessage = "Please select a media type.";
             }
         } catch (NumberFormatException ex) {
             this.buildErrorMessage = "Numeric fields must contain valid numbers.";
