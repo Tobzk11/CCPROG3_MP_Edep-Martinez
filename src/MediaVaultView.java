@@ -29,14 +29,12 @@ import java.util.function.Consumer;
  * program, builds this view, and asks it for its root node through getRoot.
  * </p>
  */
+
 public class MediaVaultView {
 
-    /** Separator used between the fields of a single list row. */
-    private static final String ROW_SEPARATOR = " - ";
+    private final StackPane rootStack;
 
-    private final StackPane rootStack; // Container to hold Login, Signup and Main UI
-
-    // --- Login Controls ---
+    // login
     private final VBox loginPane;
     private final TextField loginUsernameField;
     private final Button enterButton;
@@ -44,7 +42,6 @@ public class MediaVaultView {
     private final Button signupButton;
     private final Label loginStatusLabel;
 
-    // --- Signup Controls ---
     private final VBox signupPane;
     private final TextField signupUsernameField;
     private final Button signupEnterButton;
@@ -52,37 +49,39 @@ public class MediaVaultView {
     private final Button loginButton;
     private final Label signupStatusLabel;
 
-    // --- Main App Layout ---
     private final BorderPane mainPane;
 
-    // --- Input Controls (Main App) ---
+    // main
     private final ComboBox<String> typeComboBox;
     private final TextField titleField;
     private final TextField genreField;
     private final ComboBox<String> statusComboBox;
 
-    // Type-Specific Fields
+    // movie
     private final TextField directorField;
     private final TextField durationField;
     private final TextField releaseYearField;
+
+    // tv
     private final TextField totalEpisodesField;
     private final TextField watchedEpisodesField;
     private final TextField seasonCountField;
+
+    // video game
     private final TextField platformField;
     private final TextField requiredSpecsField;
     private final TextField developerField;
     private final TextField hoursPlayedField;
 
-    // Rating & Review Fields
+    // rate
     private final TextField ratingField;
     private final TextArea reviewField;
 
-    // Filter & Search Controls
+    // filters
     private final ComboBox<String> filterTypeComboBox;
     private final ComboBox<String> filterStatusComboBox;
     private final TextField searchField;
 
-    // --- Buttons ---
     private final Button addButton;
     private final Button removeButton;
     private final Button updateStatusButton;
@@ -92,7 +91,7 @@ public class MediaVaultView {
     private final Button saveButton;
     private final Button loadButton;
 
-    // --- Displays ---
+    // display
     private final ListView<String> entryListView;
     private final TextArea detailsArea;
     private final Label messageLabel;
@@ -110,7 +109,7 @@ public class MediaVaultView {
     public MediaVaultView() {
         rootStack = new StackPane();
 
-        // ---------------- login page ----------------
+        // login
         loginPane = new VBox(15.0);
         loginPane.setAlignment(Pos.CENTER);
         loginPane.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
@@ -133,10 +132,9 @@ public class MediaVaultView {
 
         loginStatusLabel = new Label();
 
-        loginPane.getChildren().addAll(titleLabel, loginUsernameField, enterButton,
-                loginStatusLabel, signupLabel, signupButton);
+        loginPane.getChildren().addAll(titleLabel, loginUsernameField, enterButton, loginStatusLabel, signupLabel, signupButton);
 
-        // ---------------- sign up page ----------------
+        // sign up
         signupPane = new VBox(15.0);
         signupPane.setAlignment(Pos.CENTER);
         signupPane.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
@@ -159,26 +157,23 @@ public class MediaVaultView {
 
         signupStatusLabel = new Label();
 
-        signupPane.getChildren().addAll(signupTitleLabel, signupUsernameField,
-                signupEnterButton, loginLabel, loginButton, signupStatusLabel);
+        signupPane.getChildren().addAll(signupTitleLabel, signupUsernameField, signupEnterButton, loginLabel, loginButton, signupStatusLabel);
 
-        // ---------------- main page ----------------
+        // main
         mainPane = new BorderPane();
         mainPane.setPadding(new Insets(10));
 
-        // Top Toolbar
+        // yop
         HBox topBar = new HBox(10);
         topBar.setAlignment(Pos.CENTER);
         topBar.setPadding(new Insets(0, 0, 10, 0));
 
-        saveButton = new Button("Save and Log Out");
-        loadButton = new Button("Reload Saved");
+        saveButton = new Button("Save & Exit");
+        loadButton = new Button("Load");
         searchField = new TextField();
         searchField.setPromptText("Search keyword...");
         searchButton = new Button("Search");
 
-        // "None" is the do-not-narrow option. The controller treats any label
-        // that is not one of the three media types as "no type filter".
         filterTypeComboBox = new ComboBox<>();
         filterTypeComboBox.getItems().addAll("None", "Movie", "TV Series", "Video Game");
         filterTypeComboBox.setValue("None");
@@ -190,16 +185,14 @@ public class MediaVaultView {
         filterButton = new Button("Filter");
 
         topBar.getChildren().addAll(
-                saveButton, loadButton,
-                new Separator(),
-                searchField, searchButton, new Separator(),
+                saveButton, loadButton, new Separator(), searchField, searchButton, new Separator(),
                 new Label("Type:"), filterTypeComboBox,
                 new Label("Status:"), filterStatusComboBox,
                 filterButton
         );
         mainPane.setTop(topBar);
 
-        // Center: the library list beside the details of the selected entry
+        // center
         entryListView = new ListView<>();
         detailsArea = new TextArea();
         detailsArea.setEditable(false);
@@ -207,10 +200,10 @@ public class MediaVaultView {
         detailsArea.setPromptText("Select an entry to view details...");
 
         SplitPane centerSplit = new SplitPane(entryListView, detailsArea);
-        centerSplit.setDividerPositions(0.55);
+        centerSplit.setDividerPositions(0.6);
         mainPane.setCenter(centerSplit);
 
-        // Left Form
+        // left
         VBox formBox = new VBox(8);
         formBox.setPadding(new Insets(0, 10, 0, 0));
         formBox.setPrefWidth(260);
@@ -259,8 +252,7 @@ public class MediaVaultView {
         developerField.setPromptText("Developer");
         hoursPlayedField = new TextField();
         hoursPlayedField.setPromptText("Hours Played");
-        gameBox.getChildren().addAll(gameFields, platformField, requiredSpecsField,
-                developerField, hoursPlayedField);
+        gameBox.getChildren().addAll(gameFields, platformField, requiredSpecsField, developerField, hoursPlayedField);
         setSectionVisible(gameBox, false);
 
         typeComboBox = new ComboBox<>();
@@ -299,7 +291,7 @@ public class MediaVaultView {
         formScroll.setFitToWidth(true);
         mainPane.setLeft(formScroll);
 
-        // Right: rating and review
+        // right
         VBox rateBox = new VBox();
         rateBox.setPadding(new Insets(10, 10, 10, 10));
         rateBox.setPrefWidth(260);
@@ -314,9 +306,10 @@ public class MediaVaultView {
         rateButton = new Button("Rate & Review");
 
         rateBox.getChildren().addAll(ratingLabel, ratingField, reviewLabel, reviewField, rateButton);
+
         mainPane.setRight(rateBox);
 
-        // Bottom Status
+        // bottom
         VBox bottomBox = new VBox(5);
         bottomBox.setPadding(new Insets(10, 0, 0, 0));
         messageLabel = new Label("Ready.");
@@ -326,10 +319,6 @@ public class MediaVaultView {
         bottomBox.getChildren().addAll(new Separator(), messageLabel, statisticsLabel);
         mainPane.setBottom(bottomBox);
 
-        // Add all three pages to the stack, then show the login page only.
-        // The visibility is set through the private helper rather than the
-        // public loginPage method, so nothing overridable runs during
-        // construction.
         rootStack.getChildren().addAll(loginPane, signupPane, mainPane);
         setSectionVisible(loginPane, true);
         setSectionVisible(signupPane, false);
@@ -358,10 +347,7 @@ public class MediaVaultView {
         return rootStack;
     }
 
-    // =====================================================================
-    // PAGE SWITCHING
-    // =====================================================================
-
+    // login methods
     /**
      * Shows the login page and hides the other two.
      * <p>
@@ -419,11 +405,6 @@ public class MediaVaultView {
         loginStatusLabel.setText("");
         signupStatusLabel.setText("");
     }
-
-    // =====================================================================
-    // LOGIN / SIGNUP HANDLERS AND GETTERS
-    // =====================================================================
-
     /**
      * Registers the handler run when the login Enter button is pressed.
      *
@@ -501,10 +482,6 @@ public class MediaVaultView {
         loginStatusLabel.setText("");
         signupStatusLabel.setText("");
     }
-
-    // =====================================================================
-    // MAIN PAGE HANDLERS
-    // =====================================================================
 
     /**
      * Registers the handler run when the Add Entry button is pressed.
@@ -711,44 +688,23 @@ public class MediaVaultView {
      * than the front, so a title that itself contains the separator, such as
      * {@code Mission - Impossible}, still comes back whole.
      *
-     * @param row the formatted row text, which may be null
+     * @param text the formatted row text, which may be null
      * @return the plain title, or an empty String if the row is null or empty
      */
-    private String extractTitle(String row) {
-        String title;
-
-        if (row == null || row.trim().length() == 0) {
-            title = "";
-        } else {
-            int closingBracket = row.indexOf(']');
-            String remainder;
-
-            if (closingBracket == -1) {
-                remainder = row;
-            } else {
-                remainder = row.substring(closingBracket + 1);
-            }
-
-            int lastSeparator = remainder.lastIndexOf(ROW_SEPARATOR);
-            int statusSeparator = -1;
-
-            if (lastSeparator > 0) {
-                statusSeparator = remainder.lastIndexOf(ROW_SEPARATOR, lastSeparator - 1);
-            }
-
-            if (statusSeparator > 0) {
-                title = remainder.substring(0, statusSeparator).trim();
-            } else {
-                title = remainder.trim();
+    private String extractTitle(String text) {
+        if (text == null)
+             text = "";
+        else {
+            int closingBracket = text.indexOf("] ");
+            if (closingBracket != -1) {
+                text = text.substring(closingBracket + 2).trim();
+                int parenthesis = text.indexOf(" (");
+                if (parenthesis != -1)
+                    text = text.substring(0, parenthesis).trim();
             }
         }
-
-        return title;
+        return text;
     }
-
-    // =====================================================================
-    // DISPLAY METHODS
-    // =====================================================================
 
     /**
      * Replaces the contents of the library list with the given display lines.
@@ -757,18 +713,14 @@ public class MediaVaultView {
      *
      * @param entries the display lines to show, one per entry
      */
-    public void displayEntries(ArrayList<String> entries) {
-        entryListView.getItems().setAll(entries);
-    }
+    public void displayEntries(ArrayList<String> entries) { entryListView.getItems().setAll(entries); }
 
     /**
      * Shows the full details of a single entry in the details area.
      *
      * @param details the pre-formatted detail text produced by the model
      */
-    public void showEntryDetails(String details) {
-        detailsArea.setText(details);
-    }
+    public void showEntryDetails(String details) { detailsArea.setText(details); }
 
     /**
      * Shows a short status or error message at the bottom of the main page.

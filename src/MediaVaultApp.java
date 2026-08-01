@@ -32,19 +32,19 @@ public class MediaVaultApp extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
-        // 1. Model
+        // model
         Library library = new Library();
         FileManager fileManager = new FileManager("library_data.txt");
 
-        // 2. View
+        // view
         MediaVaultView view = new MediaVaultView();
 
-        // 3. Controller wiring
+        // controller
         MediaVaultController controller =
                 new MediaVaultController(library, view, fileManager);
         controller.initController();
 
-        // 4. Stage setup
+        // stage
         Scene scene = new Scene(view.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setTitle("MediaVault");
         primaryStage.setScene(scene);

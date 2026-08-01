@@ -50,7 +50,7 @@ public class VideoGame extends MediaEntry {
     public boolean updateHoursPlayed(double hours) {
         boolean updated = false;
 
-        if (hours >= 0) {
+        if (hours >= 0 && hours > this.hoursPlayed) {
             this.hoursPlayed = hours;
             updated = true;
         }

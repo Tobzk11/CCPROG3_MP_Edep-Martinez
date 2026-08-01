@@ -61,7 +61,6 @@ public class MediaVaultController {
         this.VIEW.setSignupHandler(e -> handleSignup());
         this.VIEW.swapLoginSignup(e -> handleSwapFront());
         this.VIEW.swapSignupLogin(e -> handleSwapFront());
-
         this.VIEW.setAddEntryHandler(e -> handleAddEntry());
         this.VIEW.setRemoveEntryHandler(e -> handleRemoveEntry());
         this.VIEW.setUpdateStatusHandler(e -> handleUpdateStatus());
@@ -74,10 +73,6 @@ public class MediaVaultController {
 
         this.VIEW.loginPage();
     }
-
-    // =====================================================================
-    // LOGIN AND SIGN-UP
-    // =====================================================================
 
     /**
      * Signs an existing user in. The username must not be blank and must have
@@ -136,7 +131,6 @@ public class MediaVaultController {
      */
     public void handleSignup() {
         String username = safeTrim(this.VIEW.getSignupUsername());
-
         if (username.isEmpty()) {
             this.VIEW.setSignupStatus("Please enter a username.");
         } else {
@@ -204,11 +198,6 @@ public class MediaVaultController {
             this.LIBRARY.addEntry(e);
         }
     }
-
-    // =====================================================================
-    // LIBRARY ACTIONS
-    // =====================================================================
-
     /**
      * Reads the entry fields from the view, validates them, and adds a new
      * entry of the selected media type to the library. Duplicate titles, blank
@@ -286,20 +275,42 @@ public class MediaVaultController {
         String message;
         String title = safeTrim(this.VIEW.getSelectedEntryTitle());
         MediaStatus newStatus = parseStatus(this.VIEW.getSelectedStatus());
+        int watchedEps;
+        double hrsPlayed;
 
-        if (title.isEmpty()) {
+        if (title.isEmpty())
             message = "Select an entry to update.";
-        } else if (newStatus == null) {
+        else if (newStatus == null)
             message = "Please select a valid status.";
-        } else {
+        else {
             MediaEntry entry = this.LIBRARY.findEntry(title);
 
-            if (entry == null) {
+            if (entry == null)
                 message = "No entry titled \"" + title + "\" was found.";
-            } else {
-                entry.updateStatus(newStatus);
+            else {
+                if (entry.updateStatus(newStatus)) {
+                    message = title + " is now " + newStatus + ".";
+                    if (entry instanceof TVSeries tv && !this.VIEW.getWatchedEpisodesInput().isEmpty()) {
+                        watchedEps = Integer.parseInt(this.VIEW.getWatchedEpisodesInput());
+                        if (tv.updateWatchedEpisodes(watchedEps)) {
+                            message += " Updated watched episodes.";
+                            this.LIBRARY.removeEntry(title);
+                            this.LIBRARY.addEntry(tv);
+                        } else
+                            message += " Invalid watched episodes.";
+                    } else if (entry instanceof VideoGame vg && !this.VIEW.getHoursPlayedInput().isEmpty()) {
+                        hrsPlayed = Double.parseDouble(this.VIEW.getHoursPlayedInput());
+                        if (vg.updateHoursPlayed(hrsPlayed)) {
+                            message += " Updated hours played.";
+                            this.LIBRARY.removeEntry(title);
+                            this.LIBRARY.addEntry(vg);
+                        } else
+                            message += " Invalid hours played.";
+                    }
+                } else
+                    message = "Invalid status change.";
+
                 this.VIEW.showEntryDetails(entry.getDetails());
-                message = title + " is now " + newStatus + ".";
             }
         }
 
@@ -322,9 +333,9 @@ public class MediaVaultController {
         String ratingText = safeTrim(this.VIEW.getRatingInput());
         String review = safeTrim(this.VIEW.getReviewInput());
 
-        if (title.isEmpty()) {
+        if (title.isEmpty())
             message = "Select an entry to rate.";
-        } else {
+        else {
             MediaEntry entry = this.LIBRARY.findEntry(title);
 
             if (entry == null) {
@@ -436,10 +447,8 @@ public class MediaVaultController {
         } else {
             try {
                 this.FILE_MANAGER.saveLibrary(this.LIBRARY);
-
                 this.LIBRARY.getAllEntries().clear();
                 this.currentProfile = null;
-
                 this.VIEW.clearInputFields();
                 this.VIEW.clearLoginFields();
                 this.VIEW.showEntryDetails("");
@@ -469,16 +478,13 @@ public class MediaVaultController {
             try {
                 Library loaded = this.FILE_MANAGER.loadLibrary();
                 replaceLibraryContents(loaded);
-
                 message = "Reloaded " + this.LIBRARY.getAllEntries().size()
                         + " entries from " + this.FILE_MANAGER.getFileName() + ".";
-
                 if (this.FILE_MANAGER.getSkippedLineCount() > 0) {
                     message = message + " Skipped "
                             + this.FILE_MANAGER.getSkippedLineCount()
                             + " unreadable line(s).";
                 }
-
                 this.VIEW.showEntryDetails("");
             } catch (IOException ex) {
                 message = "Could not load from " + this.FILE_MANAGER.getFileName()
@@ -529,30 +535,23 @@ public class MediaVaultController {
         this.VIEW.displayEntries(toDisplayList(this.LIBRARY.getAllEntries()));
         this.VIEW.showStatistics(buildStatistics());
     }
-
-    // =====================================================================
-    // HELPERS
-    // =====================================================================
-
     /**
      * Builds the statistics text shown at the bottom of the main page. When a
      * user is logged in this is their personal greeting and summary from
      * UserProfile; otherwise it is the plain library summary.
-     *
      * @return the statistics text to display
      */
     private String buildStatistics() {
         String text;
 
-        if (this.currentProfile == null) {
+        if (this.currentProfile == null)
             text = this.LIBRARY.getSummary();
-        } else {
+        else
             text = this.currentProfile.viewSummary();
-        }
 
         return text;
     }
-
+    //
     /**
      * Converts a list of MediaEntry objects into the one-line summary Strings
      * the view displays in its list control.
@@ -565,15 +564,21 @@ public class MediaVaultController {
 
         for (MediaEntry e : entries) {
             String ratingText;
+            String line;
 
             if (e.getRating() == null) {
-                ratingText = "unrated";
+                ratingText = "UNRATED";
             } else {
                 ratingText = e.getRating() + "/10";
             }
 
-            lines.add("[" + e.getMediaType() + "] " + e.getTitle()
-                    + " - " + e.getStatus() + " - " + ratingText);
+            line = "[" + e.getMediaType() + "]" + "[" + e.getStatus() + " - " + ratingText + "] " + e.getTitle();
+
+            if (e instanceof TVSeries tv)
+                line += " (Watched: " + tv.getWatchedEpisodes() + "/" + tv.getTotalEpisodes() + ")";
+            else if (e instanceof VideoGame vg)
+                line += " (Hours Played: " + vg.getHoursPlayed() + ")";
+            lines.add(line);
         }
 
         return lines;

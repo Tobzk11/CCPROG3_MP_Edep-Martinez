@@ -49,7 +49,7 @@ public class TVSeries extends MediaEntry {
     public boolean updateWatchedEpisodes(int episodes) {
         boolean updated = false;
 
-        if (episodes >= 0 && episodes <= this.TOTAL_EPISODES) {
+        if (episodes >= 0 && episodes <= this.TOTAL_EPISODES && episodes > this.watchedEpisodes) {
             this.watchedEpisodes = episodes;
             updated = true;
         }

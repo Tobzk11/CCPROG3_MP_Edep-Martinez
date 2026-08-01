@@ -53,8 +53,16 @@ public abstract class MediaEntry {
      *
      * @param newStatus the new status to apply
      */
-    public void updateStatus(MediaStatus newStatus) {
-        this.status = newStatus;
+    public boolean updateStatus(MediaStatus newStatus) {
+        int compare = newStatus.compareTo(this.status);
+        boolean upd = true;
+
+        if (compare < 0)
+            upd = false;
+        else
+            this.status = newStatus;
+
+        return upd;
     }
 
     /**
