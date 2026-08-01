@@ -37,15 +37,18 @@ public class VideoGame extends MediaEntry {
     }
 
     /**
-     * Updates how many hours of this game have been played. The update is
-     * rejected when the given value is negative.
+     * Updates how many hours of this game have been played. Play time only
+     * ever accumulates, so the update is rejected when the given value is
+     * negative or is not greater than the hours already recorded. Re-entering
+     * the current figure therefore counts as no progress and is rejected.
      * <p>
      * <b>Postcondition:</b> hoursPlayed is updated only when the given value
-     * is not negative; otherwise the game is left unchanged
+     * is greater than the current value; otherwise the game is left unchanged
      * </p>
      *
      * @param hours the new number of hours played
-     * @return true if the value was updated, false if it was negative
+     * @return true if the value was updated, false if it was negative or would
+     *         not move progress forward
      */
     public boolean updateHoursPlayed(double hours) {
         boolean updated = false;

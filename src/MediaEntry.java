@@ -45,13 +45,25 @@ public abstract class MediaEntry {
     }
 
     /**
-     * Updates the status of this entry.
+     * Advances the status of this entry. Progress through a media item only
+     * ever moves forward, so a status earlier in the sequence PLANNED,
+     * IN_PROGRESS, COMPLETED than the current one is rejected and the entry is
+     * left untouched. Re-selecting the status the entry already holds is
+     * accepted and changes nothing.
+     * <p>
+     * The comparison relies on the constants of MediaStatus being declared in
+     * order of progress, so that comparing them orders them the same way.
+     * </p>
      * <p>
      * <b>Precondition:</b> newStatus is not null <br>
-     * <b>Postcondition:</b> the status attribute reflects newStatus
+     * <b>Postcondition:</b> the status attribute reflects newStatus only when
+     * newStatus is the same as, or later than, the current status; otherwise
+     * the entry is unchanged
      * </p>
      *
      * @param newStatus the new status to apply
+     * @return true if the status was applied, false if it would have moved the
+     *         entry backward
      */
     public boolean updateStatus(MediaStatus newStatus) {
         int compare = newStatus.compareTo(this.status);

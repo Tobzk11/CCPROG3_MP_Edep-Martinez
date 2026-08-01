@@ -667,7 +667,7 @@ public class MediaVaultView {
 
     /**
      * Returns the plain title of the entry currently highlighted in the list,
-     * with the type, status, and rating decoration stripped off.
+     * with the bracketed status and rating decoration stripped off.
      *
      * @return the selected entry's title, or an empty String if none is
      *         selected
@@ -678,23 +678,35 @@ public class MediaVaultView {
 
     /**
      * Pulls the plain title out of a formatted list row. A row looks like
-     * {@code [Movie] Some Title - COMPLETED - 9/10}, so the type label is
-     * dropped from the front and the status and rating are dropped from the
-     * back. The two trailing fields are located from the end of the row rather
-     * than the front, so a title that itself contains the separator, such as
-     * {@code Mission - Impossible}, still comes back whole.
+     * {@code Some Title [COMPLETED - 9/10]}, so everything from the opening
+     * bracket onward is dropped and the title in front of it is kept. Because
+     * the split happens at the bracket rather than at a dash, a title that
+     * itself contains a dash, such as {@code Mission - Impossible}, still
+     * comes back whole.
+     * <p>
+     * A row with no bracket at all is returned unchanged rather than causing
+     * an error, so an unexpected row format degrades gracefully.
+     * </p>
      *
      * @param text the formatted row text, which may be null
-     * @return the plain title, or an empty String if the row is null or empty
+     * @return the plain title, or an empty String if the row is null
      */
     private String extractTitle(String text) {
-        if (text == null)
-             text = "";
-        else {
-            int closingBracket = text.indexOf(" [");
-            text = text.substring(0, closingBracket).trim();
+        String title;
+
+        if (text == null) {
+            title = "";
+        } else {
+            int bracket = text.indexOf(" [");
+
+            if (bracket < 0) {
+                title = text.trim();
+            } else {
+                title = text.substring(0, bracket).trim();
+            }
         }
-        return text;
+
+        return title;
     }
 
     /**

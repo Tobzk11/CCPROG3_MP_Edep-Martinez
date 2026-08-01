@@ -35,16 +35,20 @@ public class TVSeries extends MediaEntry {
     }
 
     /**
-     * Updates how many episodes of this series have been watched. The update
-     * is rejected when the given count is negative or exceeds the total
-     * number of episodes in the series.
+     * Updates how many episodes of this series have been watched. Viewing
+     * progress only ever moves forward, so the update is rejected when the
+     * given count is negative, exceeds the total number of episodes, or is not
+     * greater than the count already recorded. Re-entering the current count
+     * therefore counts as no progress and is rejected.
      * <p>
      * <b>Postcondition:</b> watchedEpisodes is updated only when the given
-     * count is within range; otherwise the series is left unchanged
+     * count is greater than the current count and at most the total number of
+     * episodes; otherwise the series is left unchanged
      * </p>
      *
      * @param episodes the new number of watched episodes
-     * @return true if the count was updated, false if it was out of range
+     * @return true if the count was updated, false if it was out of range or
+     *         would not move progress forward
      */
     public boolean updateWatchedEpisodes(int episodes) {
         boolean updated = false;

@@ -275,40 +275,24 @@ public class MediaVaultController {
         String message;
         String title = safeTrim(this.VIEW.getSelectedEntryTitle());
         MediaStatus newStatus = parseStatus(this.VIEW.getSelectedStatus());
-        int watchedEps;
-        double hrsPlayed;
 
-        if (title.isEmpty())
+        if (title.isEmpty()) {
             message = "Select an entry to update.";
-        else if (newStatus == null)
+        } else if (newStatus == null) {
             message = "Please select a valid status.";
-        else {
+        } else {
             MediaEntry entry = this.LIBRARY.findEntry(title);
 
-            if (entry == null)
+            if (entry == null) {
                 message = "No entry titled \"" + title + "\" was found.";
-            else {
+            } else {
                 if (entry.updateStatus(newStatus)) {
-                    message = title + " is now " + newStatus + ".";
-                    if (entry instanceof TVSeries tv && !this.VIEW.getWatchedEpisodesInput().isEmpty()) {
-                        watchedEps = Integer.parseInt(this.VIEW.getWatchedEpisodesInput());
-                        if (tv.updateWatchedEpisodes(watchedEps)) {
-                            message += " Updated watched episodes.";
-                            this.LIBRARY.removeEntry(title);
-                            this.LIBRARY.addEntry(tv);
-                        } else
-                            message += " Invalid watched episodes.";
-                    } else if (entry instanceof VideoGame vg && !this.VIEW.getHoursPlayedInput().isEmpty()) {
-                        hrsPlayed = Double.parseDouble(this.VIEW.getHoursPlayedInput());
-                        if (vg.updateHoursPlayed(hrsPlayed)) {
-                            message += " Updated hours played.";
-                            this.LIBRARY.removeEntry(title);
-                            this.LIBRARY.addEntry(vg);
-                        } else
-                            message += " Invalid hours played.";
-                    }
-                } else
-                    message = "Invalid status change.";
+                    message = title + " is now " + newStatus + "."
+                            + applyProgressUpdate(entry);
+                } else {
+                    message = "Invalid status change. \"" + title + "\" is already "
+                            + entry.getStatus() + " and progress cannot move backward.";
+                }
 
                 this.VIEW.showEntryDetails(entry.getDetails());
             }
@@ -316,6 +300,67 @@ public class MediaVaultController {
 
         this.VIEW.showMessage(message);
         refreshView();
+    }
+
+    /**
+     * Applies the type-specific progress field, if the user filled it in, to
+     * the entry whose status has just been updated. A TV series takes its
+     * watched-episode count and a video game takes its hours played; a movie
+     * has no such field and is left alone.
+     * <p>
+     * The typed value is parsed inside a try-catch so that letters typed into
+     * a numeric field produce a message rather than an exception escaping the
+     * button handler.
+     * </p>
+     * <p>
+     * <b>Precondition:</b> entry is not null <br>
+     * <b>Postcondition:</b> the entry's progress field is updated only when a
+     * value was typed and the model accepted it
+     * </p>
+     *
+     * @param entry the entry whose progress field should be updated
+     * @return a sentence to append to the status message, or an empty String
+     *         when the user left the progress field blank
+     */
+    private String applyProgressUpdate(MediaEntry entry) {
+        String note = "";
+
+        if (entry instanceof TVSeries) {
+            TVSeries series = (TVSeries) entry;
+            String typed = safeTrim(this.VIEW.getWatchedEpisodesInput());
+
+            if (!typed.isEmpty()) {
+                try {
+                    if (series.updateWatchedEpisodes(Integer.parseInt(typed))) {
+                        note = " Updated watched episodes.";
+                    } else {
+                        note = " Watched episodes must be a whole number above "
+                                + series.getWatchedEpisodes() + " and at most "
+                                + series.getTotalEpisodes() + ".";
+                    }
+                } catch (NumberFormatException ex) {
+                    note = " Watched episodes must be a whole number.";
+                }
+            }
+        } else if (entry instanceof VideoGame) {
+            VideoGame game = (VideoGame) entry;
+            String typed = safeTrim(this.VIEW.getHoursPlayedInput());
+
+            if (!typed.isEmpty()) {
+                try {
+                    if (game.updateHoursPlayed(Double.parseDouble(typed))) {
+                        note = " Updated hours played.";
+                    } else {
+                        note = " Hours played must be a number above "
+                                + game.getHoursPlayed() + ".";
+                    }
+                } catch (NumberFormatException ex) {
+                    note = " Hours played must be a valid number.";
+                }
+            }
+        }
+
+        return note;
     }
 
     /**
@@ -445,6 +490,9 @@ public class MediaVaultController {
         if (this.currentProfile == null) {
             this.VIEW.showMessage("No user is logged in.");
         } else {
+            String username = this.currentProfile.getUsername();
+            int savedCount = this.LIBRARY.getAllEntries().size();
+
             try {
                 this.FILE_MANAGER.saveLibrary(this.LIBRARY);
                 this.LIBRARY.getAllEntries().clear();
@@ -454,6 +502,9 @@ public class MediaVaultController {
                 this.VIEW.showEntryDetails("");
                 this.VIEW.displayEntries(new ArrayList<String>());
                 this.VIEW.loginPage();
+                this.VIEW.setLoginStatus("Saved " + savedCount
+                        + (savedCount == 1 ? " entry for " : " entries for ")
+                        + username + ".");
             } catch (IOException ex) {
                 this.VIEW.showMessage("Could not save to "
                         + this.FILE_MANAGER.getFileName() + ": " + ex.getMessage());
