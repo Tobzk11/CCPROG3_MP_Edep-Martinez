@@ -570,10 +570,6 @@ public class MediaVaultView {
                 .addListener((obs, oldVal, newVal) -> action.accept(extractTitle(newVal)));
     }
 
-    // =====================================================================
-    // INPUT GETTERS
-    // =====================================================================
-
     /** @return the media type selected in the add-entry form, or null */
     public String getSelectedType() {
         return typeComboBox.getValue();
@@ -695,13 +691,8 @@ public class MediaVaultView {
         if (text == null)
              text = "";
         else {
-            int closingBracket = text.indexOf("] ");
-            if (closingBracket != -1) {
-                text = text.substring(closingBracket + 2).trim();
-                int parenthesis = text.indexOf(" (");
-                if (parenthesis != -1)
-                    text = text.substring(0, parenthesis).trim();
-            }
+            int closingBracket = text.indexOf(" [");
+            text = text.substring(0, closingBracket).trim();
         }
         return text;
     }

@@ -572,12 +572,8 @@ public class MediaVaultController {
                 ratingText = e.getRating() + "/10";
             }
 
-            line = "[" + e.getMediaType() + "]" + "[" + e.getStatus() + " - " + ratingText + "] " + e.getTitle();
+            line = e.getTitle() + " [" + e.getStatus() + " - " + ratingText + "]";
 
-            if (e instanceof TVSeries tv)
-                line += " (Watched: " + tv.getWatchedEpisodes() + "/" + tv.getTotalEpisodes() + ")";
-            else if (e instanceof VideoGame vg)
-                line += " (Hours Played: " + vg.getHoursPlayed() + ")";
             lines.add(line);
         }
 
